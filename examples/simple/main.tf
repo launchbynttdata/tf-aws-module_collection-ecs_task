@@ -10,8 +10,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module "hello" {
+data "aws_region" "current" {}
+
+provider "aws" {
+  region = var.region
+}
+
+module "ecs_task" {
   source = "../../"
 
-  hello_message = local.hello_message
+  # Core variables
+  tags = var.tags
+
+  # Naming variables
+  org           = var.org
+  project       = var.project
+  env           = var.env
+  resource_type = var.resource_type
+  purpose       = var.purpose
+  id            = var.id
+  region        = var.region
+
+  # ECS Task configuration
+  ecs_task_family = var.ecs_task_family
+
+  # Container configuration
+  container_name = var.container_name
+
+  container_image = var.container_image
+
+  container_environment = var.container_environment
+
+  container_port_mappings = var.container_port_mappings
+
 }
