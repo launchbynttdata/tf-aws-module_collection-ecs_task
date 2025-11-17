@@ -19,12 +19,12 @@ module "ecs_task" {
   tags = var.tags
 
   # Naming variables
-  org           = var.org
-  project       = var.project
-  env           = var.env
-  resource_type = var.resource_type
-  purpose       = var.purpose
-  id            = var.id
+  org           = "example"
+  project       = "ecs-task"
+  env           = "dev"
+  resource_type = "ecs_task"
+  purpose       = "demo"
+  id            = "01"
   region        = var.region
 
   # ECS Task configuration

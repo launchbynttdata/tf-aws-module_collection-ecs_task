@@ -7,17 +7,7 @@ tags = {
   Owner   = "Terraform"
 }
 
-# ============================================
-# NAMING VARIABLES
-# ============================================
-
-org           = "example"
-project       = "ecs-task"
-env           = "dev"
-resource_type = "ecs_task"
-purpose       = "demo"
-id            = "01"
-region        = "us-east-1"
+region = "us-east-1"
 
 # ============================================
 # ECS TASK CONFIGURATION

@@ -20,46 +20,6 @@ variable "tags" {
   default     = {}
 }
 
-# ============================================
-# NAMING MODULE VARIABLES
-# ============================================
-
-variable "org" {
-  description = "Organization/Company abbreviation (e.g., dmvnv, salesforce, box, mulesoft, sos, gto)"
-  type        = string
-  default     = "example"
-}
-
-variable "project" {
-  description = "Project/Application name (e.g., webapp, data-etl, mobile-api, payment-portal)"
-  type        = string
-  default     = "ecs-task"
-}
-
-variable "env" {
-  description = "Environment (e.g., dev, test, stg, prod, qa, poc)"
-  type        = string
-  default     = "dev"
-}
-
-variable "purpose" {
-  description = "Purpose/Function of the resource (e.g., webserver, database, frontend, backend, cache, logs, config)"
-  type        = string
-  default     = "demo"
-}
-
-variable "resource_type" {
-  description = "AWS resource type abbreviation (e.g., ec2, s3, vpc, rds, lambda, iam, cw, ddb, cf, r53, sns, sqs, kms, ecs, eks, ecr, alb, nlb, cfn, apigw, ebs, efs, ec, cognito, ecs_task, ecs_service, ecs_container, log_group, ecs_task_family)"
-  type        = string
-  default     = "ecs_task"
-}
-
-variable "id" {
-  description = "Instance/Sequential number or identifier (e.g., 01, 001, instance-1). Leave empty if not needed."
-  type        = string
-  default     = "01"
-}
-
 variable "region" {
   description = "AWS region or availability zone (e.g., us-west-1a, eu-west-2). Optional, used for regional resources."
   type        = string
