@@ -1,5 +1,9 @@
 # ============================================
 # VALIDATION
+# This prevents invalid configurations like:
+
+# Creating neither role nor providing ARNs
+# Trying to both create a role AND provide an existing ARN for the same role
 # ============================================
 
 resource "terraform_data" "role_validation" {

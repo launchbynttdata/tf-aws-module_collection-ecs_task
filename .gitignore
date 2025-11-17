@@ -76,3 +76,4 @@ azure_env.sh
 **/*.egg-info
 
 vendor/
+.terraform

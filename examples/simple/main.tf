@@ -12,10 +12,6 @@
 
 data "aws_region" "current" {}
 
-provider "aws" {
-  region = var.region
-}
-
 module "ecs_task" {
   source = "../../"
 
