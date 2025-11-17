@@ -39,40 +39,6 @@ locals {
     }
   ]
 
-  # Individual policy statements for execution role
-  ecs_task_secret_access_policy = length(var.secrets_manager_arns) > 0 ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = var.ecs_secrets_permissions.actions
-        Resource = var.secrets_manager_arns
-      }
-    ]
-  }) : null
-
-  ecs_execution_kms_decrypt_policy = length(var.execution_kms_key_arns) > 0 ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = var.ecs_execution_kms_permissions.actions
-        Resource = var.execution_kms_key_arns
-      }
-    ]
-  }) : null
-
-  ecs_execution_efs_access_policy = length(var.execution_efs_file_system_arns) > 0 ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = var.ecs_execution_efs_permissions.actions
-        Resource = var.execution_efs_file_system_arns
-      }
-    ]
-  }) : null
-
   # AWS managed policies to attach to execution role
   execution_managed_policies = concat(
     ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"],
@@ -82,7 +48,7 @@ locals {
   # Consolidated policies map for execution role IAM primitive
   execution_custom_policies = merge(
     # Secrets Manager access policy
-    local.ecs_task_secret_access_policy != null ? {
+    length(var.secrets_manager_arns) > 0 ? {
       "SecretAccess" = {
         sid       = "SecretAccess"
         actions   = var.ecs_secrets_permissions.actions
@@ -90,7 +56,7 @@ locals {
       }
     } : {},
     # KMS decryption policy
-    local.ecs_execution_kms_decrypt_policy != null ? {
+    length(var.execution_kms_key_arns) > 0 ? {
       "KmsDecrypt" = {
         sid       = "KmsDecrypt"
         actions   = var.ecs_execution_kms_permissions.actions
@@ -98,7 +64,7 @@ locals {
       }
     } : {},
     # EFS access policy
-    local.ecs_execution_efs_access_policy != null ? {
+    length(var.execution_efs_file_system_arns) > 0 ? {
       "EfsAccess" = {
         sid       = "EfsAccess"
         actions   = var.ecs_execution_efs_permissions.actions
@@ -118,76 +84,6 @@ locals {
   # ============================================
   # ECS TASK ROLE POLICIES
   # ============================================
-
-  # Individual policy statements for task role
-  ecs_task_s3_policy = length(var.s3_bucket_arns) > 0 ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket",
-          "s3:GetBucketLocation",
-          "s3:GetObjectVersion",
-          "s3:PutObjectAcl"
-        ]
-        Resource = concat(
-          var.s3_bucket_arns,
-          [for arn in var.s3_bucket_arns : "${arn}/*"]
-        )
-      }
-    ]
-  }) : null
-
-  ecs_task_kms_decrypt_policy = length(var.task_kms_key_arns) > 0 ? jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = var.ecs_task_kms_permissions.actions
-        Resource = var.task_kms_key_arns
-      }
-    ]
-  }) : null
-
-  # EFS policy statements (complex conditional logic)
-  ecs_efs_statements = concat(
-    [
-      {
-        Effect = "Allow"
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
-          "elasticfilesystem:ClientRootAccess",
-          "elasticfilesystem:DescribeAccessPoints",
-          "elasticfilesystem:DescribeFileSystems"
-        ]
-        Resource = concat(var.task_efs_file_system_arns, var.efs_access_point_arns)
-      }
-    ],
-    length(var.ecs_efs_s3_kms_arns) > 0 ? [
-      {
-        Effect   = "Allow"
-        Action   = var.ecs_task_kms_permissions.actions
-        Resource = var.ecs_efs_s3_kms_arns
-      }
-    ] : [],
-    length(var.s3_bucket_arns) > 0 ? [
-      {
-        Effect   = "Allow"
-        Action   = ["s3:GetObject"]
-        Resource = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
-      }
-    ] : []
-  )
-
-  ecs_task_efs_policy = (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0) ? jsonencode({
-    Version   = "2012-10-17"
-    Statement = local.ecs_efs_statements
-  }) : null
 
   # AWS Managed Policies to attach to task role
   task_managed_policy_arns = concat(
@@ -222,14 +118,14 @@ locals {
       }
     },
     # Conditional policies
-    local.ecs_task_s3_policy != null ? {
+    length(var.s3_bucket_arns) > 0 ? {
       "S3Access" = {
         sid       = ""
         actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation", "s3:GetObjectVersion", "s3:PutObjectAcl"]
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
     } : {},
-    local.ecs_task_kms_decrypt_policy != null ? {
+    length(var.task_kms_key_arns) > 0 ? {
       "KMSDecrypt" = {
         sid       = ""
         actions   = var.ecs_task_kms_permissions.actions
