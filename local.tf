@@ -11,7 +11,7 @@ locals {
   common_tags = var.tags
 
   ecs_container_name = var.ecs_container_name
-  log_group_name     = var.log_group_name
+  log_group_name     = var.log_group_name != null ? var.log_group_name : "/ecs/${var.ecs_task_family}"
 
   # ============================================
   # ROLE ARN RESOLUTION

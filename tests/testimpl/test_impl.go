@@ -2,11 +2,13 @@ package testimpl
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	testTypes "github.com/launchbynttdata/lcaf-component-terratest/types"
@@ -15,52 +17,47 @@ import (
 )
 
 func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
-	// Get AWS STS client to verify account info
-	stsClient := GetAWSSTSClient(t)
-
-	// Get the actual caller identity from AWS
-	callerIdentity, err := stsClient.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
-	require.NoError(t, err, "Failed to get caller identity from AWS")
+	// Get AWS ECS client to verify task definition
+	ecsClient := GetAWSECSClient(t)
 
 	// Get outputs from Terraform
-	accountId := terraform.Output(t, ctx.TerratestTerraformOptions(), "account_id")
-	arn := terraform.Output(t, ctx.TerratestTerraformOptions(), "arn")
-	helloMessage := terraform.Output(t, ctx.TerratestTerraformOptions(), "hello_message")
+	taskDefinitionArn := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_definition_arn")
+	taskDefinitionFamily := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_definition_family")
+	taskDefinitionRevision := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_definition_revision")
+	taskExecutionRoleArn := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_execution_role_arn")
+	taskRoleArn := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_role_arn")
+	ecsTaskFamilyName := terraform.Output(t, ctx.TerratestTerraformOptions(), "ecs_task_family_name")
+	logGroupName := terraform.Output(t, ctx.TerratestTerraformOptions(), "log_group_name")
+	taskDef := fmt.Sprintf("%s:%s", taskDefinitionFamily, taskDefinitionRevision)
+	print("taskDef0", taskDef)
 
-	t.Run("TestAccountIdMatches", func(t *testing.T) {
-		testAccountIdMatches(t, callerIdentity, accountId)
+	t.Run("TestTaskDefinitionArn", func(t *testing.T) {
+		testTaskDefinitionArn(t, taskDefinitionArn)
 	})
 
-	t.Run("TestArnMatches", func(t *testing.T) {
-		testArnMatches(t, callerIdentity, arn)
+	t.Run("TestTaskDefinitionFamily", func(t *testing.T) {
+		testTaskDefinitionFamily(t, taskDefinitionFamily, ecsTaskFamilyName)
 	})
 
-	t.Run("TestHelloMessage", func(t *testing.T) {
-		testHelloMessage(t, helloMessage)
+	t.Run("TestTaskDefinitionRevision", func(t *testing.T) {
+		testTaskDefinitionRevision(t, taskDefinitionRevision)
 	})
-}
 
-func testAccountIdMatches(t *testing.T, callerIdentity *sts.GetCallerIdentityOutput, accountId string) {
-	assert.Equal(t, *callerIdentity.Account, accountId, "Account ID from Terraform should match AWS caller identity")
-	assert.NotEmpty(t, accountId, "Account ID should not be empty")
+	t.Run("TestTaskExecutionRoleArn", func(t *testing.T) {
+		testTaskExecutionRoleArn(t, taskExecutionRoleArn)
+	})
 
-	// Verify it's a valid 12-digit account ID
-	matched, _ := regexp.MatchString(`^\d{12}$`, accountId)
-	assert.True(t, matched, "Account ID should be a 12-digit number")
-}
+	t.Run("TestTaskRoleArn", func(t *testing.T) {
+		testTaskRoleArn(t, taskRoleArn)
+	})
 
-func testArnMatches(t *testing.T, callerIdentity *sts.GetCallerIdentityOutput, arn string) {
-	assert.Equal(t, *callerIdentity.Arn, arn, "ARN from Terraform should match AWS caller identity")
-	assert.NotEmpty(t, arn, "ARN should not be empty")
+	t.Run("TestLogGroupName", func(t *testing.T) {
+		testLogGroupName(t, logGroupName)
+	})
 
-	// Verify it's a valid ARN format
-	matched, _ := regexp.MatchString(`^arn:aws:`, arn)
-	assert.True(t, matched, "ARN should start with 'arn:aws:'")
-}
-
-func testHelloMessage(t *testing.T, helloMessage string) {
-	assert.NotEmpty(t, helloMessage, "Hello message should not be empty")
-	assert.Contains(t, helloMessage, "Hello", "Message should contain 'Hello'")
+	t.Run("TestTaskDefinitionExists", func(t *testing.T) {
+		testTaskDefinitionExists(t, ecsClient, taskDefinitionArn)
+	})
 }
 
 func GetAWSSTSClient(t *testing.T) *sts.Client {
@@ -72,4 +69,56 @@ func GetAWSConfig(t *testing.T) (cfg aws.Config) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	require.NoErrorf(t, err, "unable to load SDK config, %v", err)
 	return cfg
+}
+
+func GetAWSECSClient(t *testing.T) *ecs.Client {
+	awsECSClient := ecs.NewFromConfig(GetAWSConfig(t))
+	return awsECSClient
+}
+
+func testTaskDefinitionArn(t *testing.T, taskDefinitionArn string) {
+	assert.NotEmpty(t, taskDefinitionArn, "Task definition ARN should not be empty")
+	print("taskDefinitionArn: ", taskDefinitionArn, "\n")
+	// Verify it's a valid ARN format for ECS task definition
+	matched, _ := regexp.MatchString(`^arn:aws:ecs:[^:]+:\d+:task-definition/[^:]+:\d+$`, taskDefinitionArn)
+	assert.True(t, matched, "Task definition ARN should match ECS task definition ARN format")
+}
+
+func testTaskDefinitionFamily(t *testing.T, taskDefinitionFamily, ecsTaskFamilyName string) {
+	assert.NotEmpty(t, taskDefinitionFamily, "Task definition family should not be empty")
+	assert.Equal(t, ecsTaskFamilyName, taskDefinitionFamily, "Task definition family should match ECS task family name")
+}
+
+func testTaskDefinitionRevision(t *testing.T, taskDefinitionRevision string) {
+	assert.NotEmpty(t, taskDefinitionRevision, "Task definition revision should not be empty")
+	// Verify it's a number
+	matched, _ := regexp.MatchString(`^\d+$`, taskDefinitionRevision)
+	assert.True(t, matched, "Task definition revision should be a number")
+}
+
+func testTaskExecutionRoleArn(t *testing.T, taskExecutionRoleArn string) {
+	assert.NotEmpty(t, taskExecutionRoleArn, "Task execution role ARN should not be empty")
+	// Verify it's a valid IAM role ARN format
+	matched, _ := regexp.MatchString(`^arn:aws:iam::\d+:role/[^:]+$`, taskExecutionRoleArn)
+	assert.True(t, matched, "Task execution role ARN should match IAM role ARN format")
+}
+
+func testTaskRoleArn(t *testing.T, taskRoleArn string) {
+	assert.NotEmpty(t, taskRoleArn, "Task role ARN should not be empty")
+	// Verify it's a valid IAM role ARN format
+	matched, _ := regexp.MatchString(`^arn:aws:iam::\d+:role/[^:]+$`, taskRoleArn)
+	assert.True(t, matched, "Task role ARN should match IAM role ARN format")
+}
+
+func testLogGroupName(t *testing.T, logGroupName string) {
+	assert.NotEmpty(t, logGroupName, "Log group name should not be empty")
+	// Verify it starts with /ecs/
+	assert.Contains(t, logGroupName, "/ecs/", "Log group name should contain '/ecs/'")
+}
+
+func testTaskDefinitionExists(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn string) {
+	// Extract task definition name from ARN
+	// ARN format: arn:aws:ecs:region:account:task-definition/family:revision
+	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
+	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
 }

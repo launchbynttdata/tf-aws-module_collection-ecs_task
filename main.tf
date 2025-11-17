@@ -137,7 +137,7 @@ module "ecs_task" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = local.log_group_name != null ? local.log_group_name : (var.log_group_name != null ? var.log_group_name : "/ecs/${var.ecs_task_family}")
+          "awslogs-group"         = local.log_group_name
           "awslogs-region"        = var.region != "" ? var.region : data.aws_region.current.name
           "awslogs-stream-prefix" = "ecs"
         }
