@@ -20,12 +20,6 @@ variable "tags" {
   default     = {}
 }
 
-variable "region" {
-  description = "AWS region or availability zone (e.g., us-west-1a, eu-west-2). Optional, used for regional resources."
-  type        = string
-  default     = "us-east-1"
-}
-
 # ============================================
 # ECS TASK CONFIGURATION
 # ============================================
