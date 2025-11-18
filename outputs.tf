@@ -130,20 +130,20 @@ output "ecs_task_role_tags" {
   value       = var.create_task_role ? module.ecs_task_role[0].role_tags : null
 }
 
-# output "ecs_task_role_custom_policy_arns" {
-#   description = "Map of custom policy names to their ARNs for the ECS task role"
-#   value       = { for k, v in module.ecs_task_role_custom_policies : k => v.policy_arn }
-# }
+output "ecs_task_role_custom_policy_arns" {
+  description = "Map of custom policy names to their ARNs for the ECS task role"
+  value       = var.create_task_role && length(local.task_custom_policies) > 0 ? { for k, v in module.ecs_task_role_custom_policies : k => v.policy_arn } : {}
+}
 
-# output "ecs_task_role_custom_policy_names" {
-#   description = "Map of custom policy names to their names for the ECS task role"
-#   value       = { for k, v in module.ecs_task_role_custom_policies : k => v.policy_name }
-# }
+output "ecs_task_role_custom_policy_names" {
+  description = "Map of custom policy names to their names for the ECS task role"
+  value       = var.create_task_role && length(local.task_custom_policies) > 0 ? { for k, v in module.ecs_task_role_custom_policies : k => v.policy_name } : {}
+}
 
-# output "ecs_task_role_custom_policy_ids" {
-#   description = "Map of custom policy names to their IDs for the ECS task role"
-#   value       = { for k, v in module.ecs_task_role_custom_policies : k => v.policy_id }
-# }
+output "ecs_task_role_custom_policy_ids" {
+  description = "Map of custom policy names to their IDs for the ECS task role"
+  value       = var.create_task_role && length(local.task_custom_policies) > 0 ? { for k, v in module.ecs_task_role_custom_policies : k => v.policy_id } : {}
+}
 
 output "container_names" {
   description = "List of container names in the task definition"

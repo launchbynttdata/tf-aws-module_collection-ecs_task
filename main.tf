@@ -93,21 +93,21 @@ module "ecs_task_role" {
 }
 
 # ECS TASK ROLE CUSTOM ACCESS POLICY
-module "ecs_task_custom_access_policy" {
-  count  = var.create_task_role && length(local.task_custom_policies) > 0 ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_policy.git?ref=0.1.0"
+module "ecs_task_role_custom_policies" {
+  for_each = var.create_task_role && length(local.task_custom_policies) > 0 ? local.task_custom_policies : {}
+  source   = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_policy.git?ref=0.1.0"
 
-  policy_name      = var.task_policy_name
-  policy_statement = local.task_custom_policies
+  policy_name      = var.task_policy_name != null ? "${var.task_policy_name}-${each.key}" : "${var.ecs_task_family}-task-${each.key}"
+  policy_statement = { (each.key) = each.value }
   tags             = local.common_tags
 }
 
-module "ecs_task_custom_access_policy_attachment" {
-  count  = var.create_task_role && length(local.task_custom_policies) > 0 ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role_policy_attachment.git?ref=0.1.0"
+module "ecs_task_role_custom_policies_attachment" {
+  for_each = module.ecs_task_role_custom_policies
+  source   = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role_policy_attachment.git?ref=0.1.0"
 
   role_name  = module.ecs_task_role[0].role_name
-  policy_arn = module.ecs_task_custom_access_policy[0].policy_arn
+  policy_arn = each.value.policy_arn
 }
 
 # ============================================
