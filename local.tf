@@ -95,29 +95,28 @@ locals {
 
   # Consolidated policies map for task role IAM primitive
   task_custom_policies = merge(
-    # Always included policies
-    {
+    # Conditional policies
+    length(var.ecs_task_cloudwatch_permissions.actions) > 0 ? {
       "CloudWatchLogs" = {
         sid       = "VisualEditor0"
         actions   = var.ecs_task_cloudwatch_permissions.actions
         resources = var.ecs_task_cloudwatch_permissions.resources
       }
-    },
-    {
+    } : {},
+    length(var.ecs_task_ssm_permissions.actions) > 0 ? {
       "SSMSessionManager" = {
         sid       = ""
         actions   = var.ecs_task_ssm_permissions.actions
         resources = var.ecs_task_ssm_permissions.resources
       }
-    },
-    {
+    } : {},
+    length(var.ecs_task_appconfig_permissions.actions) > 0 ? {
       "AppConfig" = {
         sid       = ""
         actions   = var.ecs_task_appconfig_permissions.actions
         resources = var.ecs_task_appconfig_permissions.resources
       }
-    },
-    # Conditional policies
+    } : {},
     length(var.s3_bucket_arns) > 0 ? {
       "S3Access" = {
         sid       = ""
