@@ -19,11 +19,6 @@ output "tags" {
   value       = module.ecs_task.tags
 }
 
-output "default_tags" {
-  description = "Default tags only (without module-specific or user tags)"
-  value       = module.ecs_task.default_tags
-}
-
 # ============================================
 # RESOURCE NAMES OUTPUTS
 # ============================================
