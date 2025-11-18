@@ -34,8 +34,9 @@ resource "terraform_data" "role_validation" {
 # ============================================
 
 module "ecs_task_execution_role" {
-  count  = var.create_execution_role ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role.git?ref=0.1.0"
+  count   = var.create_execution_role ? 1 : 0
+  source  = "terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws"
+  version = "~> 0.1.0"
 
   # Role configuration
   name               = var.execution_role_name != null ? var.execution_role_name : "${var.ecs_task_family}-execution"
@@ -53,8 +54,9 @@ module "ecs_task_execution_role" {
 }
 
 module "ecs_task_execution_custom_access_policy" {
-  count  = var.create_execution_role && length(local.execution_custom_policies) > 0 ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_policy.git?ref=0.1.0"
+  count   = var.create_execution_role && length(local.execution_custom_policies) > 0 ? 1 : 0
+  source  = "terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws"
+  version = "~> 0.3.0"
 
   policy_name      = var.execution_policy_name
   policy_statement = local.execution_custom_policies
@@ -63,8 +65,9 @@ module "ecs_task_execution_custom_access_policy" {
 
 # Attach secret access policy to execution role
 module "ecs_task_execution_custom_access_policy_attachment" {
-  count  = var.create_execution_role && length(local.execution_custom_policies) > 0 ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role_policy_attachment.git?ref=0.1.0"
+  count   = var.create_execution_role && length(local.execution_custom_policies) > 0 ? 1 : 0
+  source  = "terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws"
+  version = "~> 0.1.0"
 
   role_name  = module.ecs_task_execution_role[0].role_name
   policy_arn = module.ecs_task_execution_custom_access_policy[0].policy_arn
@@ -74,8 +77,9 @@ module "ecs_task_execution_custom_access_policy_attachment" {
 # ECS TASK ROLE
 # ============================================
 module "ecs_task_role" {
-  count  = var.create_task_role ? 1 : 0
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role.git?ref=0.1.0"
+  count   = var.create_task_role ? 1 : 0
+  source  = "terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws"
+  version = "~> 0.1.0"
 
   # Role configuration
   name               = var.task_role_name != null ? var.task_role_name : "${var.ecs_task_family}-task"
@@ -95,7 +99,8 @@ module "ecs_task_role" {
 # ECS TASK ROLE CUSTOM ACCESS POLICY
 module "ecs_task_role_custom_policies" {
   for_each = var.create_task_role && length(local.task_custom_policies) > 0 ? local.task_custom_policies : {}
-  source   = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_policy.git?ref=0.1.0"
+  source   = "terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws"
+  version  = "~> 0.3.0"
 
   policy_name      = var.task_policy_name != null ? "${var.task_policy_name}-${each.key}" : "${var.ecs_task_family}-task-${each.key}"
   policy_statement = { (each.key) = each.value }
@@ -104,7 +109,8 @@ module "ecs_task_role_custom_policies" {
 
 module "ecs_task_role_custom_policies_attachment" {
   for_each = module.ecs_task_role_custom_policies
-  source   = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-iam_role_policy_attachment.git?ref=0.1.0"
+  source   = "terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws"
+  version  = "~> 0.1.0"
 
   role_name  = module.ecs_task_role[0].role_name
   policy_arn = each.value.policy_arn
@@ -116,7 +122,8 @@ module "ecs_task_role_custom_policies_attachment" {
 
 # Using the public tf-aws-module_primitive-ecs_task module
 module "ecs_task" {
-  source = "git::https://github.com/launchbynttdata/tf-aws-module_primitive-ecs_task.git?ref=0.1.0"
+  source  = "terraform.registry.launch.nttdata.com/module_primitive/ecs_task/aws"
+  version = "~> 0.1.1"
 
   # Core task configuration
   family             = var.ecs_task_family
