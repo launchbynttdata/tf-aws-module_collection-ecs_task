@@ -19,11 +19,6 @@ output "tags" {
   value       = var.tags
 }
 
-output "default_tags" {
-  description = "Default tags only (without module-specific or user tags)"
-  value       = var.tags
-}
-
 # ============================================
 # RESOURCE NAMES MODULE OUTPUTS
 # ============================================
