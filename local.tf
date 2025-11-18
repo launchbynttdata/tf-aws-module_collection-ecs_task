@@ -99,29 +99,29 @@ locals {
     {
       "CloudWatchLogs" = {
         sid       = "VisualEditor0"
-        actions   = ["logs:CreateLogGroup"]
-        resources = ["*"]
+        actions   = var.ecs_task_cloudwatch_permissions.actions
+        resources = var.ecs_task_cloudwatch_permissions.resources
       }
     },
     {
       "SSMSessionManager" = {
         sid       = ""
-        actions   = ["ssmmessages:*", "ssm:UpdateInstanceInformation", "ssm:StartSession", "ssm:DescribeSessions", "ssm:GetConnectionStatus"]
-        resources = ["*"]
+        actions   = var.ecs_task_ssm_permissions.actions
+        resources = var.ecs_task_ssm_permissions.resources
       }
     },
     {
       "AppConfig" = {
         sid       = ""
-        actions   = ["appconfig:StartConfigurationSession", "appconfig:GetConfiguration", "appconfig:GetConfigurationProfile", "appconfig:GetLatestConfiguration", "appconfig:GetApplication", "appconfig:GetEnvironment", "appconfig:ListApplications", "appconfig:ListConfigurationProfiles", "appconfig:ListEnvironments", "appconfig:GetDeployment", "appconfig:ListDeployments"]
-        resources = ["*"]
+        actions   = var.ecs_task_appconfig_permissions.actions
+        resources = var.ecs_task_appconfig_permissions.resources
       }
     },
     # Conditional policies
     length(var.s3_bucket_arns) > 0 ? {
       "S3Access" = {
         sid       = ""
-        actions   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket", "s3:GetBucketLocation", "s3:GetObjectVersion", "s3:PutObjectAcl"]
+        actions   = var.ecs_task_s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
     } : {},
@@ -135,7 +135,7 @@ locals {
     (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0) ? {
       "EFSMount" = {
         sid       = ""
-        actions   = ["elasticfilesystem:ClientMount", "elasticfilesystem:ClientWrite", "elasticfilesystem:ClientRootAccess", "elasticfilesystem:DescribeAccessPoints", "elasticfilesystem:DescribeFileSystems"]
+        actions   = var.ecs_task_efs_permissions.actions
         resources = concat(var.task_efs_file_system_arns, var.efs_access_point_arns)
       }
     } : {},
@@ -149,7 +149,7 @@ locals {
     (length(var.s3_bucket_arns) > 0 && (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0)) ? {
       "EFSS3" = {
         sid       = ""
-        actions   = ["s3:GetObject"]
+        actions   = var.ecs_task_efs_s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
     } : {},

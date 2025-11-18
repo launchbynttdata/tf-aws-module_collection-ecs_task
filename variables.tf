@@ -429,3 +429,137 @@ variable "region" {
     error_message = "Region must contain only lowercase alphanumeric characters, underscores and hyphens."
   }
 }
+
+# ============================================
+# ECS TASK ROLE POLICY CUSTOMIZATION
+# ============================================
+
+variable "ecs_task_cloudwatch_permissions" {
+  description = "CloudWatch Logs permissions for ECS task role"
+  type = object({
+    actions   = optional(list(string), ["logs:CreateLogGroup"])
+    resources = optional(list(string), ["*"])
+  })
+  default = {
+    actions   = ["logs:CreateLogGroup"]
+    resources = ["*"]
+  }
+}
+
+variable "ecs_task_ssm_permissions" {
+  description = "SSM Session Manager permissions for ECS task role"
+  type = object({
+    actions = optional(list(string), [
+      "ssmmessages:*",
+      "ssm:UpdateInstanceInformation",
+      "ssm:StartSession",
+      "ssm:DescribeSessions",
+      "ssm:GetConnectionStatus"
+    ])
+    resources = optional(list(string), ["*"])
+  })
+  default = {
+    actions = [
+      "ssmmessages:*",
+      "ssm:UpdateInstanceInformation",
+      "ssm:StartSession",
+      "ssm:DescribeSessions",
+      "ssm:GetConnectionStatus"
+    ]
+    resources = ["*"]
+  }
+}
+
+variable "ecs_task_appconfig_permissions" {
+  description = "AppConfig permissions for ECS task role"
+  type = object({
+    actions = optional(list(string), [
+      "appconfig:StartConfigurationSession",
+      "appconfig:GetConfiguration",
+      "appconfig:GetConfigurationProfile",
+      "appconfig:GetLatestConfiguration",
+      "appconfig:GetApplication",
+      "appconfig:GetEnvironment",
+      "appconfig:ListApplications",
+      "appconfig:ListConfigurationProfiles",
+      "appconfig:ListEnvironments",
+      "appconfig:GetDeployment",
+      "appconfig:ListDeployments"
+    ])
+    resources = optional(list(string), ["*"])
+  })
+  default = {
+    actions = [
+      "appconfig:StartConfigurationSession",
+      "appconfig:GetConfiguration",
+      "appconfig:GetConfigurationProfile",
+      "appconfig:GetLatestConfiguration",
+      "appconfig:GetApplication",
+      "appconfig:GetEnvironment",
+      "appconfig:ListApplications",
+      "appconfig:ListConfigurationProfiles",
+      "appconfig:ListEnvironments",
+      "appconfig:GetDeployment",
+      "appconfig:ListDeployments"
+    ]
+    resources = ["*"]
+  }
+}
+
+variable "ecs_task_s3_permissions" {
+  description = "S3 permissions for ECS task role"
+  type = object({
+    actions = optional(list(string), [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+      "s3:GetObjectVersion",
+      "s3:PutObjectAcl"
+    ])
+  })
+  default = {
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+      "s3:GetObjectVersion",
+      "s3:PutObjectAcl"
+    ]
+  }
+}
+
+variable "ecs_task_efs_permissions" {
+  description = "EFS permissions for ECS task role"
+  type = object({
+    actions = optional(list(string), [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite",
+      "elasticfilesystem:ClientRootAccess",
+      "elasticfilesystem:DescribeAccessPoints",
+      "elasticfilesystem:DescribeFileSystems"
+    ])
+  })
+  default = {
+    actions = [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite",
+      "elasticfilesystem:ClientRootAccess",
+      "elasticfilesystem:DescribeAccessPoints",
+      "elasticfilesystem:DescribeFileSystems"
+    ]
+  }
+}
+
+variable "ecs_task_efs_s3_permissions" {
+  description = "S3 permissions for EFS integration with ECS task role"
+  type = object({
+    actions = optional(list(string), ["s3:GetObject"])
+  })
+  default = {
+    actions = ["s3:GetObject"]
+  }
+}
