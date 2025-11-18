@@ -64,5 +64,3 @@ variable "container_port_mappings" {
     protocol      = "tcp"
   }]
 }
-
-
