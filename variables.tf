@@ -10,93 +10,6 @@ variable "tags" {
 
 
 # ============================================
-# NAMING MODULE VARIABLES
-# ============================================
-
-variable "org" {
-  description = "Organization/Company abbreviation (e.g., dmvnv, salesforce, box, mulesoft, sos, gto)"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9_-]+$", var.org))
-    error_message = "Organization must contain only lowercase alphanumeric characters, underscores and hyphens."
-  }
-}
-
-variable "project" {
-  description = "Project/Application name (e.g., webapp, data-etl, mobile-api, payment-portal)"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9_-]+$", var.project))
-    error_message = "Project must contain only lowercase alphanumeric characters, underscores and hyphens."
-  }
-}
-
-variable "env" {
-  description = "Environment (e.g., dev, test, stg, prod, qa, poc)"
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "test", "stg", "prod", "qa", "poc"], var.env)
-    error_message = "Environment must be one of: dev, test, stg, prod, qa, poc."
-  }
-}
-
-variable "resource_type" {
-  description = "AWS resource type abbreviation (e.g., ec2, s3, vpc, rds, lambda, etc.)"
-  type        = string
-
-  validation {
-    condition = contains([
-      "ec2", "s3", "vpc", "rds", "lambda", "iam", "cw", "ddb", "cf", "r53",
-      "sns", "sqs", "kms", "ecs", "eks", "ecr", "alb", "nlb", "cfn", "ssm",
-      "apigw", "ebs", "efs", "ec", "cognito", "ecs_task", "ecs_service",
-      "ecs_container", "log_group", "ecs_task_family"
-    ], var.resource_type)
-    error_message = "Resource type must be a valid AWS service abbreviation."
-  }
-}
-
-variable "purpose" {
-  description = "Purpose/Function of the resource (e.g., webserver, database, frontend, backend, cache, logs, config)"
-  type        = string
-
-  validation {
-    condition     = can(regex("^[a-z0-9_-]+$", var.purpose))
-    error_message = "Purpose must contain only lowercase alphanumeric characters, underscores and hyphens."
-  }
-}
-
-variable "id" {
-  description = "Instance/Sequential number or identifier (e.g., 01, 001, instance-1). Leave empty if not needed."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.id == "" || can(regex("^[a-z0-9_-]+$", var.id))
-    error_message = "ID must contain only lowercase alphanumeric characters, underscores and hyphens."
-  }
-}
-
-variable "region" {
-  description = "AWS region or availability zone (e.g., us-west-1a, eu-west-2). Optional, used for regional resources."
-  type        = string
-  default     = ""
-
-  validation {
-    condition     = var.region == "" || can(regex("^[a-z0-9_-]+$", var.region))
-    error_message = "Region must contain only lowercase alphanumeric characters, underscores and hyphens."
-  }
-}
-
-variable "include_region_in_name" {
-  description = "Whether to include region in the resource name"
-  type        = bool
-  default     = false
-}
-
-# ============================================
 # RESOURCE NAMES (INSTEAD OF RESOURCE_NAMES MODULE)
 # ============================================
 
@@ -504,5 +417,15 @@ variable "ecs_task_kms_permissions" {
       "kms:Decrypt",
       "kms:DescribeKey"
     ]
+  }
+}
+variable "region" {
+  description = "AWS region or availability zone (e.g., us-west-1a, eu-west-2). Optional, used for regional resources."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.region == "" || can(regex("^[a-z0-9_-]+$", var.region))
+    error_message = "Region must contain only lowercase alphanumeric characters, underscores and hyphens."
   }
 }

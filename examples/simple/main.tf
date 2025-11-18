@@ -18,15 +18,6 @@ module "ecs_task" {
   # Core variables
   tags = var.tags
 
-  # Naming variables
-  org           = "example"
-  project       = "ecs-task"
-  env           = "dev"
-  resource_type = "ecs_task"
-  purpose       = "demo"
-  id            = "01"
-  region        = var.region
-
   # ECS Task configuration
   ecs_task_family = var.ecs_task_family
 
