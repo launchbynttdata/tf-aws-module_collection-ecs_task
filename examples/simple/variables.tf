@@ -65,12 +65,6 @@ variable "container_port_mappings" {
   }]
 }
 
-variable "task_policy_name" {
-  description = "The name of the IAM policy for the task role."
-  type        = string
-  default     = null
-}
-
 # ============================================
 # RESOURCE NAME MODULE VARIABLES
 # ============================================
