@@ -19,13 +19,14 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_ecs_task_execution_role"></a> [ecs\_task\_execution\_role](#module\_ecs\_task\_execution\_role) | terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws | ~> 0.1.0 |
-| <a name="module_ecs_task_execution_custom_access_policy"></a> [ecs\_task\_execution\_custom\_access\_policy](#module\_ecs\_task\_execution\_custom\_access\_policy) | terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws | ~> 0.3.0 |
-| <a name="module_ecs_task_execution_custom_access_policy_attachment"></a> [ecs\_task\_execution\_custom\_access\_policy\_attachment](#module\_ecs\_task\_execution\_custom\_access\_policy\_attachment) | terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws | ~> 0.1.0 |
-| <a name="module_ecs_task_role"></a> [ecs\_task\_role](#module\_ecs\_task\_role) | terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws | ~> 0.1.0 |
-| <a name="module_ecs_task_role_custom_policies"></a> [ecs\_task\_role\_custom\_policies](#module\_ecs\_task\_role\_custom\_policies) | terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws | ~> 0.3.0 |
-| <a name="module_ecs_task_role_custom_policies_attachment"></a> [ecs\_task\_role\_custom\_policies\_attachment](#module\_ecs\_task\_role\_custom\_policies\_attachment) | terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws | ~> 0.1.0 |
-| <a name="module_ecs_task"></a> [ecs\_task](#module\_ecs\_task) | terraform.registry.launch.nttdata.com/module_primitive/ecs_task/aws | ~> 0.1.1 |
+| <a name="module_ecs_task_execution_role"></a> [ecs\_task\_execution\_role](#module\_ecs\_task\_execution\_role) | terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws | ~> 0.1 |
+| <a name="module_execution_role_default_policy"></a> [execution\_role\_default\_policy](#module\_execution\_role\_default\_policy) | terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws | ~> 0.3 |
+| <a name="module_execution_role_default_policy_attachement"></a> [execution\_role\_default\_policy\_attachement](#module\_execution\_role\_default\_policy\_attachement) | terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws | ~> 0.1 |
+| <a name="module_execution_role_managed_policy_attachement"></a> [execution\_role\_managed\_policy\_attachement](#module\_execution\_role\_managed\_policy\_attachement) | terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws | ~> 0.1 |
+| <a name="module_ecs_task_role"></a> [ecs\_task\_role](#module\_ecs\_task\_role) | terraform.registry.launch.nttdata.com/module_primitive/iam_role/aws | ~> 0.1 |
+| <a name="module_ecs_task_role_custom_policies"></a> [ecs\_task\_role\_custom\_policies](#module\_ecs\_task\_role\_custom\_policies) | terraform.registry.launch.nttdata.com/module_primitive/iam_policy/aws | ~> 0.3 |
+| <a name="module_ecs_task_role_custom_policies_attachment"></a> [ecs\_task\_role\_custom\_policies\_attachment](#module\_ecs\_task\_role\_custom\_policies\_attachment) | terraform.registry.launch.nttdata.com/module_primitive/iam_role_policy_attachment/aws | ~> 0.1 |
+| <a name="module_ecs_task"></a> [ecs\_task](#module\_ecs\_task) | terraform.registry.launch.nttdata.com/module_primitive/ecs_task/aws | ~> 0.1 |
 
 ## Resources
 
@@ -86,7 +87,7 @@
 | <a name="input_ecs_execution_efs_permissions"></a> [ecs\_execution\_efs\_permissions](#input\_ecs\_execution\_efs\_permissions) | EFS permissions for ECS task execution role | <pre>object({<br/>    actions = optional(list(string), [<br/>      "elasticfilesystem:ClientMount",<br/>      "elasticfilesystem:ClientWrite",<br/>      "elasticfilesystem:ClientRead",<br/>      "elasticfilesystem:ClientRootAccess"<br/>    ])<br/>  })</pre> | <pre>{<br/>  "actions": [<br/>    "elasticfilesystem:ClientMount",<br/>    "elasticfilesystem:ClientWrite",<br/>    "elasticfilesystem:ClientRead",<br/>    "elasticfilesystem:ClientRootAccess"<br/>  ]<br/>}</pre> | no |
 | <a name="input_execution_policy_name"></a> [execution\_policy\_name](#input\_execution\_policy\_name) | The name of the IAM policy. | `string` | `null` | no |
 | <a name="input_task_policy_name"></a> [task\_policy\_name](#input\_task\_policy\_name) | The name of the IAM policy for the task role. | `string` | `null` | no |
-| <a name="input_custom_ecs_execution_policies"></a> [custom\_ecs\_execution\_policies](#input\_custom\_ecs\_execution\_policies) | List of custom policy ARNs to attach to ECS task execution role | `list(string)` | `[]` | no |
+| <a name="input_execution_role_custom_policies"></a> [execution\_role\_custom\_policies](#input\_execution\_role\_custom\_policies) | List of custom policy ARNs to attach to ECS task execution role | `list(string)` | `[]` | no |
 | <a name="input_ecs_efs_s3_kms_arns"></a> [ecs\_efs\_s3\_kms\_arns](#input\_ecs\_efs\_s3\_kms\_arns) | List of KMS key ARNs used by the containerized app to decrypt data.<br/>ARN of KMS key used by the containerized app to decrypt data you explicitly encrypted with KMS for the files stored in EFS volume; ARN of the KMS key used by ECS task to read files from S3 buckets that are encrypted with SSE‑KMS; ARN of KMS key used for any client‑side encryption where the container performs decryption. | `list(string)` | `[]` | no |
 | <a name="input_ecs_task_kms_permissions"></a> [ecs\_task\_kms\_permissions](#input\_ecs\_task\_kms\_permissions) | KMS permissions for ECS task role | <pre>object({<br/>    actions = optional(list(string), [<br/>      "kms:Decrypt",<br/>      "kms:DescribeKey"<br/>    ])<br/>  })</pre> | <pre>{<br/>  "actions": [<br/>    "kms:Decrypt",<br/>    "kms:DescribeKey"<br/>  ]<br/>}</pre> | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region or availability zone (e.g., us-west-1a, eu-west-2). Optional, used for regional resources. | `string` | `""` | no |

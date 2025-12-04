@@ -401,7 +401,7 @@ variable "task_policy_name" {
   default     = null
 }
 
-variable "custom_ecs_execution_policies" {
+variable "execution_role_custom_policies" {
   description = "List of custom policy ARNs to attach to ECS task execution role"
   type        = list(string)
   default     = []

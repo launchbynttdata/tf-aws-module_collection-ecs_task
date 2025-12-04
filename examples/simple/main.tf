@@ -11,6 +11,23 @@
 // limitations under the License.
 
 
+module "resource_names" {
+  source  = "terraform.registry.launch.nttdata.com/module_library/resource_name/launch"
+  version = "~> 2.2"
+
+  for_each = local.resource_name_configs
+
+  logical_product_family  = var.logical_product_family
+  logical_product_service = var.logical_product_service
+  region                  = var.region
+  class_env               = var.class_env
+  instance_env            = var.instance_env
+  cloud_resource_type     = each.value.cloud_resource_type
+  instance_resource       = var.instance_resource
+  maximum_length          = var.maximum_length
+  separator               = var.separator
+}
+
 module "ecs_task" {
   source = "../../"
 
@@ -19,6 +36,11 @@ module "ecs_task" {
 
   # ECS Task configuration
   ecs_task_family = var.ecs_task_family
+
+  # IAM Role configuration
+  execution_role_name = module.resource_names["execution"].standard
+  task_role_name      = module.resource_names["task"].standard
+  task_policy_name    = module.resource_names["policy"].standard
 
   # Container configuration
   container_name = var.container_name

@@ -33,3 +33,19 @@ container_port_mappings = [
     protocol      = "tcp"
   }
 ]
+
+# ============================================
+# RESOURCE NAME MODULE VARIABLES
+# ============================================
+
+logical_product_family        = "demo_org"
+logical_product_service       = "ecs_task"
+region                        = "us-east-2"
+class_env                     = "dev"
+instance_env                  = 0
+cloud_resource_type_execution = "executionrole"
+cloud_resource_type_task      = "taskrole"
+cloud_resource_type_policy    = "taskpolicy"
+instance_resource             = 0
+maximum_length                = 60
+separator                     = "-"
