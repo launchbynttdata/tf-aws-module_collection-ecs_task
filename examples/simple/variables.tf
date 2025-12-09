@@ -64,3 +64,69 @@ variable "container_port_mappings" {
     protocol      = "tcp"
   }]
 }
+
+# ============================================
+# RESOURCE NAME MODULE VARIABLES
+# ============================================
+
+variable "logical_product_family" {
+  description = "Name of the product family for which the resource is created. Example: org_name, department_name."
+  type        = string
+}
+
+variable "logical_product_service" {
+  description = "Name of the product service for which the resource is created. For example, backend, frontend, middleware etc."
+  type        = string
+}
+
+variable "region" {
+  description = "The location where the resource will be created. Must not have spaces For example, us-east-2, useast2, West-US-2"
+  type        = string
+}
+
+variable "class_env" {
+  description = "Environment where resource is going to be deployed. For example. dev, qa, uat"
+  type        = string
+}
+
+variable "instance_env" {
+  description = "Number that represents the instance of the environment."
+  type        = number
+  default     = 0
+}
+
+variable "cloud_resource_type_execution" {
+  description = "Abbreviation for the type of resource for execution role."
+  type        = string
+  default     = "executionrole"
+}
+
+variable "cloud_resource_type_task" {
+  description = "Abbreviation for the type of resource for task role."
+  type        = string
+  default     = "taskrole"
+}
+
+variable "cloud_resource_type_policy" {
+  description = "Abbreviation for the type of resource for task policy."
+  type        = string
+  default     = "taskpolicy"
+}
+
+variable "instance_resource" {
+  description = "Number that represents the instance of the resource."
+  type        = number
+  default     = 0
+}
+
+variable "maximum_length" {
+  description = "Number that represents the maximum length the resource name could have."
+  type        = number
+  default     = 60
+}
+
+variable "separator" {
+  description = "Separator to be used in the name"
+  type        = string
+  default     = "-"
+}

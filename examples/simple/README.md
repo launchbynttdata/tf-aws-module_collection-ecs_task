@@ -16,6 +16,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_resource_names"></a> [resource\_names](#module\_resource\_names) | terraform.registry.launch.nttdata.com/module_library/resource_name/launch | ~> 2.2 |
 | <a name="module_ecs_task"></a> [ecs\_task](#module\_ecs\_task) | ../../ | n/a |
 
 ## Resources
@@ -32,6 +33,17 @@ No resources.
 | <a name="input_container_image"></a> [container\_image](#input\_container\_image) | The image to use for the container | `string` | `"nginx:latest"` | no |
 | <a name="input_container_environment"></a> [container\_environment](#input\_container\_environment) | A list of environment variables to pass to the container | `list(map(string))` | `[]` | no |
 | <a name="input_container_port_mappings"></a> [container\_port\_mappings](#input\_container\_port\_mappings) | A list of port mappings for the container | <pre>list(object({<br/>    containerPort = number<br/>    hostPort      = number<br/>    protocol      = string<br/>  }))</pre> | <pre>[<br/>  {<br/>    "containerPort": 80,<br/>    "hostPort": 80,<br/>    "protocol": "tcp"<br/>  }<br/>]</pre> | no |
+| <a name="input_logical_product_family"></a> [logical\_product\_family](#input\_logical\_product\_family) | Name of the product family for which the resource is created. Example: org\_name, department\_name. | `string` | n/a | yes |
+| <a name="input_logical_product_service"></a> [logical\_product\_service](#input\_logical\_product\_service) | Name of the product service for which the resource is created. For example, backend, frontend, middleware etc. | `string` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | The location where the resource will be created. Must not have spaces For example, us-east-2, useast2, West-US-2 | `string` | n/a | yes |
+| <a name="input_class_env"></a> [class\_env](#input\_class\_env) | Environment where resource is going to be deployed. For example. dev, qa, uat | `string` | n/a | yes |
+| <a name="input_instance_env"></a> [instance\_env](#input\_instance\_env) | Number that represents the instance of the environment. | `number` | `0` | no |
+| <a name="input_cloud_resource_type_execution"></a> [cloud\_resource\_type\_execution](#input\_cloud\_resource\_type\_execution) | Abbreviation for the type of resource for execution role. | `string` | `"executionrole"` | no |
+| <a name="input_cloud_resource_type_task"></a> [cloud\_resource\_type\_task](#input\_cloud\_resource\_type\_task) | Abbreviation for the type of resource for task role. | `string` | `"taskrole"` | no |
+| <a name="input_cloud_resource_type_policy"></a> [cloud\_resource\_type\_policy](#input\_cloud\_resource\_type\_policy) | Abbreviation for the type of resource for task policy. | `string` | `"taskpolicy"` | no |
+| <a name="input_instance_resource"></a> [instance\_resource](#input\_instance\_resource) | Number that represents the instance of the resource. | `number` | `0` | no |
+| <a name="input_maximum_length"></a> [maximum\_length](#input\_maximum\_length) | Number that represents the maximum length the resource name could have. | `number` | `60` | no |
+| <a name="input_separator"></a> [separator](#input\_separator) | Separator to be used in the name | `string` | `"-"` | no |
 
 ## Outputs
 

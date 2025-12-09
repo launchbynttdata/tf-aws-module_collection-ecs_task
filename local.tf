@@ -52,13 +52,13 @@ locals {
   ]
 
   # AWS managed policies to attach to execution role
-  execution_managed_policies = concat(
+  execution_role_managed_policies = concat(
     ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"],
-    var.custom_ecs_execution_policies
+    var.execution_role_custom_policies
   )
 
   # Consolidated policies map for execution role IAM primitive
-  execution_custom_policies = merge(
+  execution_role_default_policies = merge(
     # Secrets Manager access policy
     length(var.secrets_manager_arns) > 0 ? {
       "SecretAccess" = {
@@ -81,14 +81,6 @@ locals {
         sid       = "EfsAccess"
         actions   = var.ecs_execution_efs_permissions.actions
         resources = var.execution_efs_file_system_arns
-      }
-    } : {},
-    # Managed policy attachment permissions
-    length(local.execution_managed_policies) > 0 ? {
-      "ManagedPolicyAttachment" = {
-        sid       = "ManagedPolicyAttachment"
-        actions   = ["iam:AttachRolePolicy"]
-        resources = local.execution_managed_policies
       }
     } : {}
   )
