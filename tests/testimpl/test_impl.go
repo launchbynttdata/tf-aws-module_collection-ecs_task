@@ -2,13 +2,17 @@ package testimpl
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	testTypes "github.com/launchbynttdata/lcaf-component-terratest/types"
@@ -19,6 +23,7 @@ import (
 func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	// Get AWS ECS client to verify task definition
 	ecsClient := GetAWSECSClient(t)
+	iamClient := GetAWSIAMClient(t)
 
 	// Get outputs from Terraform
 	taskDefinitionArn := terraform.Output(t, ctx.TerratestTerraformOptions(), "task_definition_arn")
@@ -58,6 +63,10 @@ func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	t.Run("TestTaskDefinitionExists", func(t *testing.T) {
 		testTaskDefinitionExists(t, ecsClient, taskDefinitionArn)
 	})
+
+	t.Run("TestTaskRolePolicies", func(t *testing.T) {
+		testTaskRolePolicies(t, iamClient, taskRoleArn)
+	})
 }
 
 func GetAWSSTSClient(t *testing.T) *sts.Client {
@@ -74,6 +83,11 @@ func GetAWSConfig(t *testing.T) (cfg aws.Config) {
 func GetAWSECSClient(t *testing.T) *ecs.Client {
 	awsECSClient := ecs.NewFromConfig(GetAWSConfig(t))
 	return awsECSClient
+}
+
+func GetAWSIAMClient(t *testing.T) *iam.Client {
+	awsIAMClient := iam.NewFromConfig(GetAWSConfig(t))
+	return awsIAMClient
 }
 
 func testTaskDefinitionArn(t *testing.T, taskDefinitionArn string) {
@@ -121,4 +135,138 @@ func testTaskDefinitionExists(t *testing.T, ecsClient *ecs.Client, taskDefinitio
 	// ARN format: arn:aws:ecs:region:account:task-definition/family:revision
 	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
 	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+}
+
+func testTaskRolePolicies(t *testing.T, iamClient *iam.Client, taskRoleArn string) {
+	// Extract role name from ARN
+	// ARN format: arn:aws:iam::account:role/role-name
+	parts := regexp.MustCompile(`^arn:aws:iam::\d+:role/(.+)$`).FindStringSubmatch(taskRoleArn)
+	require.Len(t, parts, 2, "Task role ARN should contain role name")
+	roleName := parts[1]
+
+	// List attached policies
+	listAttachedPoliciesInput := &iam.ListAttachedRolePoliciesInput{
+		RoleName: &roleName,
+	}
+	attachedPolicies, err := iamClient.ListAttachedRolePolicies(context.TODO(), listAttachedPoliciesInput)
+	require.NoError(t, err, "Failed to list attached policies for task role")
+
+	// Check for CloudWatch permissions
+	hasCloudWatchPolicy := false
+	hasSSMPolicy := false
+	hasAppConfigPolicy := false
+	hasS3Policy := false
+
+	for _, policy := range attachedPolicies.AttachedPolicies {
+		policyArn := *policy.PolicyArn
+		policyName := *policy.PolicyName
+
+		// Get policy document
+		getPolicyInput := &iam.GetPolicyInput{
+			PolicyArn: &policyArn,
+		}
+		policyResp, err := iamClient.GetPolicy(context.TODO(), getPolicyInput)
+		require.NoError(t, err, "Failed to get policy")
+
+		policyVersion := *policyResp.Policy.DefaultVersionId
+		getPolicyVersionInput := &iam.GetPolicyVersionInput{
+			PolicyArn: &policyArn,
+			VersionId: &policyVersion,
+		}
+		policyVersionResp, err := iamClient.GetPolicyVersion(context.TODO(), getPolicyVersionInput)
+		require.NoError(t, err, "Failed to get policy version")
+
+		policyDocument := *policyVersionResp.PolicyVersion.Document
+
+		// Parse the policy document
+		var policyDoc map[string]interface{}
+		unescaped, err := url.QueryUnescape(policyDocument)
+		require.NoError(t, err, "Failed to unescape policy document")
+		err = json.Unmarshal([]byte(unescaped), &policyDoc)
+		require.NoError(t, err, "Failed to parse policy document")
+
+		statements, ok := policyDoc["Statement"].([]interface{})
+		require.True(t, ok, "Policy document should have Statement array")
+
+		// Check if it's the CloudWatch policy
+		if strings.Contains(policyName, "CloudWatchLogs") {
+			hasCloudWatchPolicy = true
+			// Check for logs:CreateLogGroup action
+			found := false
+			for _, stmt := range statements {
+				stmtMap, ok := stmt.(map[string]interface{})
+				if !ok {
+					continue
+				}
+				action := stmtMap["Action"]
+				if actionStr, ok := action.(string); ok {
+					if actionStr == "logs:CreateLogGroup" {
+						found = true
+						break
+					}
+				} else if actionArr, ok := action.([]interface{}); ok {
+					for _, a := range actionArr {
+						if a == "logs:CreateLogGroup" {
+							found = true
+							break
+						}
+					}
+				}
+				if found {
+					break
+				}
+			}
+			assert.True(t, found, "CloudWatch policy should contain logs:CreateLogGroup action")
+		}
+
+		// Check if it's the SSM policy
+		if strings.Contains(policyName, "SSMSessionManager") {
+			hasSSMPolicy = true
+			// Check for SSM actions
+			ssmActions := []string{"ssmmessages:*", "ssm:UpdateInstanceInformation", "ssm:StartSession", "ssm:DescribeSessions", "ssm:GetConnectionStatus"}
+			for _, expectedAction := range ssmActions {
+				found := false
+				for _, stmt := range statements {
+					stmtMap, ok := stmt.(map[string]interface{})
+					if !ok {
+						continue
+					}
+					action := stmtMap["Action"]
+					if actionStr, ok := action.(string); ok {
+						if actionStr == expectedAction {
+							found = true
+							break
+						}
+					} else if actionArr, ok := action.([]interface{}); ok {
+						for _, a := range actionArr {
+							if a == expectedAction {
+								found = true
+								break
+							}
+						}
+					}
+					if found {
+						break
+					}
+				}
+				assert.True(t, found, "SSM policy should contain %s action", expectedAction)
+			}
+		}
+
+		// Check if it's the AppConfig policy
+		if strings.Contains(policyName, "AppConfig") {
+			hasAppConfigPolicy = true
+		}
+
+		// Check if it's the S3 policy
+		if strings.Contains(policyName, "S3Access") {
+			hasS3Policy = true
+		}
+	}
+
+	// Assert that the policies are present
+	assert.True(t, hasCloudWatchPolicy, "Task role should have CloudWatch Logs policy attached")
+	assert.True(t, hasSSMPolicy, "Task role should have SSM Session Manager policy attached")
+	assert.False(t, hasAppConfigPolicy, "Task role should not have AppConfig policy attached when enable_ecs_task_appconfig_permissions is false")
+	assert.False(t, hasS3Policy, "Task role should not have S3 policy attached when enable_ecs_task_s3_permissions is false")
 }

@@ -89,6 +89,71 @@ locals {
   # ECS TASK ROLE POLICIES
   # ============================================
 
+  # CloudWatch permissions logic
+  cloudwatch_permissions = var.ecs_task_cloudwatch_permissions != null ? var.ecs_task_cloudwatch_permissions : (var.enable_ecs_task_cloudwatch_permissions ? {
+    actions   = ["logs:CreateLogGroup"]
+    resources = ["*"]
+  } : null)
+
+  # SSM permissions logic
+  ssm_permissions = var.ecs_task_ssm_permissions != null ? var.ecs_task_ssm_permissions : (var.enable_ecs_task_ssm_permissions ? {
+    actions = [
+      "ssmmessages:*",
+      "ssm:UpdateInstanceInformation",
+      "ssm:StartSession",
+      "ssm:DescribeSessions",
+      "ssm:GetConnectionStatus"
+    ]
+    resources = ["*"]
+  } : null)
+
+  # AppConfig permissions logic
+  appconfig_permissions = var.ecs_task_appconfig_permissions != null ? var.ecs_task_appconfig_permissions : (var.enable_ecs_task_appconfig_permissions ? {
+    actions = [
+      "appconfig:StartConfigurationSession",
+      "appconfig:GetConfiguration",
+      "appconfig:GetConfigurationProfile",
+      "appconfig:GetLatestConfiguration",
+      "appconfig:GetApplication",
+      "appconfig:GetEnvironment",
+      "appconfig:ListApplications",
+      "appconfig:ListConfigurationProfiles",
+      "appconfig:ListEnvironments",
+      "appconfig:GetDeployment",
+      "appconfig:ListDeployments"
+    ]
+    resources = ["*"]
+  } : null)
+
+  # S3 permissions logic
+  s3_permissions = var.ecs_task_s3_permissions != null ? var.ecs_task_s3_permissions : (var.enable_ecs_task_s3_permissions ? {
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+      "s3:GetObjectVersion",
+      "s3:PutObjectAcl"
+    ]
+  } : null)
+
+  # EFS permissions logic
+  efs_permissions = var.ecs_task_efs_permissions != null ? var.ecs_task_efs_permissions : (var.enable_ecs_task_efs_permissions ? {
+    actions = [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite",
+      "elasticfilesystem:ClientRootAccess",
+      "elasticfilesystem:DescribeAccessPoints",
+      "elasticfilesystem:DescribeFileSystems"
+    ]
+  } : null)
+
+  # EFS S3 permissions logic
+  efs_s3_permissions = var.ecs_task_efs_s3_permissions != null ? var.ecs_task_efs_s3_permissions : (var.enable_ecs_task_efs_s3_permissions ? {
+    actions = ["s3:GetObject"]
+  } : null)
+
   # AWS Managed Policies to attach to task role
   task_managed_policy_arns = concat(
     var.enable_ecs_exec ? [
@@ -100,31 +165,31 @@ locals {
   # Consolidated policies map for task role IAM primitive
   task_custom_policies = merge(
     # Conditional policies
-    length(var.ecs_task_cloudwatch_permissions.actions) > 0 ? {
+    local.cloudwatch_permissions != null ? {
       "CloudWatchLogs" = {
         sid       = "VisualEditor0"
-        actions   = var.ecs_task_cloudwatch_permissions.actions
-        resources = var.ecs_task_cloudwatch_permissions.resources
+        actions   = local.cloudwatch_permissions.actions
+        resources = local.cloudwatch_permissions.resources
       }
     } : {},
-    length(var.ecs_task_ssm_permissions.actions) > 0 ? {
+    local.ssm_permissions != null ? {
       "SSMSessionManager" = {
         sid       = ""
-        actions   = var.ecs_task_ssm_permissions.actions
-        resources = var.ecs_task_ssm_permissions.resources
+        actions   = local.ssm_permissions.actions
+        resources = local.ssm_permissions.resources
       }
     } : {},
-    length(var.ecs_task_appconfig_permissions.actions) > 0 ? {
+    local.appconfig_permissions != null ? {
       "AppConfig" = {
         sid       = ""
-        actions   = var.ecs_task_appconfig_permissions.actions
-        resources = var.ecs_task_appconfig_permissions.resources
+        actions   = local.appconfig_permissions.actions
+        resources = local.appconfig_permissions.resources
       }
     } : {},
-    length(var.s3_bucket_arns) > 0 ? {
+    length(var.s3_bucket_arns) > 0 && local.s3_permissions != null ? {
       "S3Access" = {
         sid       = ""
-        actions   = var.ecs_task_s3_permissions.actions
+        actions   = local.s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
     } : {},
@@ -135,10 +200,10 @@ locals {
         resources = var.task_kms_key_arns
       }
     } : {},
-    (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0) ? {
+    (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0) && local.efs_permissions != null ? {
       "EFSMount" = {
         sid       = ""
-        actions   = var.ecs_task_efs_permissions.actions
+        actions   = local.efs_permissions.actions
         resources = concat(var.task_efs_file_system_arns, var.efs_access_point_arns)
       }
     } : {},
@@ -149,10 +214,10 @@ locals {
         resources = var.ecs_efs_s3_kms_arns
       }
     } : {},
-    (length(var.s3_bucket_arns) > 0 && (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0)) ? {
+    (length(var.s3_bucket_arns) > 0 && (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0)) && local.efs_s3_permissions != null ? {
       "EFSS3" = {
         sid       = ""
-        actions   = var.ecs_task_efs_s3_permissions.actions
+        actions   = local.efs_s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
     } : {},
