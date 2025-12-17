@@ -51,4 +51,10 @@ module "ecs_task" {
 
   container_port_mappings = var.container_port_mappings
 
+  # Enable specific permissions
+  enable_ecs_task_cloudwatch_permissions = true
+  enable_ecs_task_ssm_permissions        = true
+  enable_ecs_task_appconfig_permissions  = false
+  enable_ecs_task_s3_permissions         = false
+
 }

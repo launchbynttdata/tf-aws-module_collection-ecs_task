@@ -452,10 +452,13 @@ variable "ecs_task_cloudwatch_permissions" {
     actions   = optional(list(string), ["logs:CreateLogGroup"])
     resources = optional(list(string), ["*"])
   })
-  default = {
-    actions   = ["logs:CreateLogGroup"]
-    resources = ["*"]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_cloudwatch_permissions" {
+  description = "Whether to enable CloudWatch Logs permissions for ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
 
 variable "ecs_task_ssm_permissions" {
@@ -470,16 +473,13 @@ variable "ecs_task_ssm_permissions" {
     ])
     resources = optional(list(string), ["*"])
   })
-  default = {
-    actions = [
-      "ssmmessages:*",
-      "ssm:UpdateInstanceInformation",
-      "ssm:StartSession",
-      "ssm:DescribeSessions",
-      "ssm:GetConnectionStatus"
-    ]
-    resources = ["*"]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_ssm_permissions" {
+  description = "Whether to enable SSM Session Manager permissions for ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
 
 variable "ecs_task_appconfig_permissions" {
@@ -500,22 +500,13 @@ variable "ecs_task_appconfig_permissions" {
     ])
     resources = optional(list(string), ["*"])
   })
-  default = {
-    actions = [
-      "appconfig:StartConfigurationSession",
-      "appconfig:GetConfiguration",
-      "appconfig:GetConfigurationProfile",
-      "appconfig:GetLatestConfiguration",
-      "appconfig:GetApplication",
-      "appconfig:GetEnvironment",
-      "appconfig:ListApplications",
-      "appconfig:ListConfigurationProfiles",
-      "appconfig:ListEnvironments",
-      "appconfig:GetDeployment",
-      "appconfig:ListDeployments"
-    ]
-    resources = ["*"]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_appconfig_permissions" {
+  description = "Whether to enable AppConfig permissions for ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
 
 variable "ecs_task_s3_permissions" {
@@ -531,17 +522,13 @@ variable "ecs_task_s3_permissions" {
       "s3:PutObjectAcl"
     ])
   })
-  default = {
-    actions = [
-      "s3:GetObject",
-      "s3:PutObject",
-      "s3:DeleteObject",
-      "s3:ListBucket",
-      "s3:GetBucketLocation",
-      "s3:GetObjectVersion",
-      "s3:PutObjectAcl"
-    ]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_s3_permissions" {
+  description = "Whether to enable S3 permissions for ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
 
 variable "ecs_task_efs_permissions" {
@@ -555,15 +542,13 @@ variable "ecs_task_efs_permissions" {
       "elasticfilesystem:DescribeFileSystems"
     ])
   })
-  default = {
-    actions = [
-      "elasticfilesystem:ClientMount",
-      "elasticfilesystem:ClientWrite",
-      "elasticfilesystem:ClientRootAccess",
-      "elasticfilesystem:DescribeAccessPoints",
-      "elasticfilesystem:DescribeFileSystems"
-    ]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_efs_permissions" {
+  description = "Whether to enable EFS permissions for ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
 
 variable "ecs_task_efs_s3_permissions" {
@@ -571,7 +556,11 @@ variable "ecs_task_efs_s3_permissions" {
   type = object({
     actions = optional(list(string), ["s3:GetObject"])
   })
-  default = {
-    actions = ["s3:GetObject"]
-  }
+  default = null
+}
+
+variable "enable_ecs_task_efs_s3_permissions" {
+  description = "Whether to enable S3 permissions for EFS integration with ECS task role when not explicitly provided"
+  type        = bool
+  default     = false
 }
