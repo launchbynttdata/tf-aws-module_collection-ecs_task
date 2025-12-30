@@ -147,25 +147,7 @@ module "ecs_task" {
   memory                   = var.ecs_task_memory
 
   # Container configuration
-  container_definitions = [
-    {
-      name         = var.container_name == null ? local.ecs_container_name : var.container_name
-      image        = var.container_image
-      cpu          = var.container_cpu
-      memory       = var.container_memory
-      environment  = var.container_environment
-      portMappings = var.container_port_mappings
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = local.log_group_name
-          "awslogs-region"        = var.region != "" ? var.region : data.aws_region.current.name
-          "awslogs-stream-prefix" = "ecs"
-        }
-      }
-      essential = true
-    }
-  ]
+  container_definitions = local.container_definitions
 
   # Secrets and storage
   secrets_manager_secrets = var.secrets_manager_secrets

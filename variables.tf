@@ -215,6 +215,28 @@ variable "container_port_mappings" {
   default = []
 }
 
+variable "container_definitions" {
+  description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables (container_name, container_image, etc.)"
+  type = map(object({
+    name        = string
+    image       = string
+    cpu         = optional(number, 256)
+    memory      = optional(number, 512)
+    environment = optional(list(map(string)), [])
+    portMappings = optional(list(object({
+      containerPort = number
+      hostPort      = optional(number)
+      protocol      = optional(string, "tcp")
+    })), [])
+    logConfiguration = optional(object({
+      logDriver = string
+      options   = map(string)
+    }), null)
+    essential = optional(bool, true)
+  }))
+  default = {}
+}
+
 # ============================================
 # ADDITIONAL ECS TASK VARIABLES (PRIMITIVE MODULE)
 # ============================================

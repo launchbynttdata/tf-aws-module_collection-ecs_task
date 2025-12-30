@@ -29,6 +29,18 @@ variable "ecs_task_family" {
   type        = string
 }
 
+variable "ecs_task_cpu" {
+  description = "The number of CPU units used by the task"
+  type        = string
+  default     = "512"
+}
+
+variable "ecs_task_memory" {
+  description = "The amount (in MiB) of memory used by the task"
+  type        = string
+  default     = "1024"
+}
+
 # ============================================
 # CONTAINER CONFIGURATION
 # ============================================
@@ -63,6 +75,24 @@ variable "container_port_mappings" {
     hostPort      = 80
     protocol      = "tcp"
   }]
+}
+
+variable "container_definitions" {
+  description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables"
+  type = map(object({
+    name        = string
+    image       = string
+    cpu         = optional(number, 256)
+    memory      = optional(number, 512)
+    environment = optional(list(map(string)), [])
+    portMappings = optional(list(object({
+      containerPort = number
+      hostPort      = optional(number)
+      protocol      = optional(string, "tcp")
+    })), [])
+    essential = optional(bool, true)
+  }))
+  default = {}
 }
 
 # ============================================

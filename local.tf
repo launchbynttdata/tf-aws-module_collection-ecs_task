@@ -232,10 +232,10 @@ locals {
   )
 
   # ============================================
-  # CONTAINER DEFINITION
+  # CONTAINER DEFINITIONS
   # ============================================
 
-  container_definition = [
+  container_definitions = length(var.container_definitions) > 0 ? values(var.container_definitions) : [
     {
       name        = var.container_name == null ? local.ecs_container_name : var.container_name
       image       = var.container_image
@@ -244,13 +244,13 @@ locals {
       environment = var.container_environment
       portMappings = [for port in var.container_port_mappings : {
         containerPort = port.containerPort
-        hostPort      = 0
+        hostPort      = port.hostPort
         protocol      = port.protocol
       }]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = local.log_group_name != null ? local.log_group_name : (var.log_group_name != null ? var.log_group_name : "/ecs/${var.ecs_task_family}")
+          "awslogs-group"         = local.log_group_name
           "awslogs-region"        = var.region != "" ? var.region : data.aws_region.current.name
           "awslogs-stream-prefix" = "ecs"
         }
