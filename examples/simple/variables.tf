@@ -44,39 +44,6 @@ variable "ecs_task_memory" {
 # ============================================
 # CONTAINER CONFIGURATION
 # ============================================
-
-variable "container_name" {
-  description = "The name of the container"
-  type        = string
-  default     = null
-}
-
-variable "container_image" {
-  description = "The image to use for the container"
-  type        = string
-  default     = "nginx:latest"
-}
-
-variable "container_environment" {
-  description = "A list of environment variables to pass to the container"
-  type        = list(map(string))
-  default     = []
-}
-
-variable "container_port_mappings" {
-  description = "A list of port mappings for the container"
-  type = list(object({
-    containerPort = number
-    hostPort      = number
-    protocol      = string
-  }))
-  default = [{
-    containerPort = 80
-    hostPort      = 80
-    protocol      = "tcp"
-  }]
-}
-
 variable "container_definitions" {
   description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables"
   type = map(object({
