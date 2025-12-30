@@ -69,4 +69,3 @@ cloud_resource_type_policy    = "taskpolicy"
 instance_resource             = 0
 maximum_length                = 60
 separator                     = "-"
-
