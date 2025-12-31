@@ -185,6 +185,7 @@ variable "container_name" {
 variable "container_image" {
   description = "The image to use for the container"
   type        = string
+  default     = null
 }
 
 variable "container_cpu" {

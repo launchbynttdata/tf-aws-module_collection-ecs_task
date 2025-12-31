@@ -47,9 +47,13 @@ module "ecs_task" {
   # Container configuration
   container_definitions = var.container_definitions
 
-  # Required individual container variables (used as fallback when container_definitions is empty)
-  container_name  = "dummy"
-  container_image = "dummy:latest"
+  # Individual container variables (used when container_definitions is empty)
+  container_name          = var.container_name
+  container_image         = var.container_image
+  container_cpu           = var.container_cpu
+  container_memory        = var.container_memory
+  container_environment   = var.container_environment
+  container_port_mappings = var.container_port_mappings
 
   # Enable specific permissions
   enable_ecs_task_cloudwatch_permissions = true

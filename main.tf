@@ -29,6 +29,15 @@ resource "terraform_data" "role_validation" {
   }
 }
 
+resource "terraform_data" "container_validation" {
+  lifecycle {
+    precondition {
+      condition     = length(var.container_definitions) > 0 || var.container_image != null
+      error_message = "Either 'container_definitions' must be provided, or 'container_image' must be specified for the default container definition."
+    }
+  }
+}
+
 # ============================================
 # ECS TASK EXECUTION ROLE
 # ============================================

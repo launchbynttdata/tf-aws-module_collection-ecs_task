@@ -62,6 +62,47 @@ variable "container_definitions" {
   default = {}
 }
 
+# Individual container variables (used when container_definitions is empty)
+variable "container_name" {
+  description = "The name of the container"
+  type        = string
+  default     = null
+}
+
+variable "container_image" {
+  description = "The image to use for the container"
+  type        = string
+  default     = null
+}
+
+variable "container_cpu" {
+  description = "The number of cpu units reserved for the container"
+  type        = number
+  default     = 256
+}
+
+variable "container_memory" {
+  description = "The amount (in MiB) of memory reserved for the container"
+  type        = number
+  default     = 512
+}
+
+variable "container_environment" {
+  description = "A list of environment variables to pass to the container"
+  type        = list(map(string))
+  default     = []
+}
+
+variable "container_port_mappings" {
+  description = "A list of port mappings for the container"
+  type = list(object({
+    containerPort = number
+    hostPort      = number
+    protocol      = string
+  }))
+  default = []
+}
+
 # ============================================
 # RESOURCE NAME MODULE VARIABLES
 # ============================================
