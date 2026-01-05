@@ -64,6 +64,10 @@ func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 		testTaskDefinitionExists(t, ecsClient, taskDefinitionArn)
 	})
 
+	t.Run("TestMultipleContainers", func(t *testing.T) {
+		testMultipleContainers(t, ecsClient, taskDefinitionArn)
+	})
+
 	t.Run("TestTaskRolePolicies", func(t *testing.T) {
 		testTaskRolePolicies(t, iamClient, taskRoleArn)
 	})
@@ -135,6 +139,31 @@ func testTaskDefinitionExists(t *testing.T, ecsClient *ecs.Client, taskDefinitio
 	// ARN format: arn:aws:ecs:region:account:task-definition/family:revision
 	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
 	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+
+	// Describe the task definition to verify it exists
+	describeInput := &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(parts[1]),
+	}
+	resp, err := ecsClient.DescribeTaskDefinition(context.TODO(), describeInput)
+	require.NoError(t, err, "Failed to describe task definition")
+	assert.NotNil(t, resp.TaskDefinition, "Task definition should exist")
+}
+
+func testMultipleContainers(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn string) {
+	// Extract task definition name from ARN
+	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
+	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+
+	// Describe the task definition
+	describeInput := &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(parts[1]),
+	}
+	resp, err := ecsClient.DescribeTaskDefinition(context.TODO(), describeInput)
+	require.NoError(t, err, "Failed to describe task definition")
+
+	// Verify multiple containers are defined
+	containerDefs := resp.TaskDefinition.ContainerDefinitions
+	assert.Greater(t, len(containerDefs), 1, "Task definition should have multiple containers")
 }
 
 func testTaskRolePolicies(t *testing.T, iamClient *iam.Client, taskRoleArn string) {

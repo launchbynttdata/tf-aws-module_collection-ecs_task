@@ -29,10 +29,40 @@ variable "ecs_task_family" {
   type        = string
 }
 
+variable "ecs_task_cpu" {
+  description = "The number of CPU units used by the task"
+  type        = string
+  default     = "512"
+}
+
+variable "ecs_task_memory" {
+  description = "The amount (in MiB) of memory used by the task"
+  type        = string
+  default     = "1024"
+}
+
 # ============================================
 # CONTAINER CONFIGURATION
 # ============================================
+variable "container_definitions" {
+  description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables"
+  type = map(object({
+    name        = string
+    image       = string
+    cpu         = optional(number, 256)
+    memory      = optional(number, 512)
+    environment = optional(list(map(string)), [])
+    portMappings = optional(list(object({
+      containerPort = number
+      hostPort      = optional(number)
+      protocol      = optional(string, "tcp")
+    })), [])
+    essential = optional(bool, true)
+  }))
+  default = {}
+}
 
+# Individual container variables (used when container_definitions is empty)
 variable "container_name" {
   description = "The name of the container"
   type        = string
@@ -42,7 +72,19 @@ variable "container_name" {
 variable "container_image" {
   description = "The image to use for the container"
   type        = string
-  default     = "nginx:latest"
+  default     = null
+}
+
+variable "container_cpu" {
+  description = "The number of cpu units reserved for the container"
+  type        = number
+  default     = 256
+}
+
+variable "container_memory" {
+  description = "The amount (in MiB) of memory reserved for the container"
+  type        = number
+  default     = 512
 }
 
 variable "container_environment" {
@@ -58,11 +100,7 @@ variable "container_port_mappings" {
     hostPort      = number
     protocol      = string
   }))
-  default = [{
-    containerPort = 80
-    hostPort      = 80
-    protocol      = "tcp"
-  }]
+  default = []
 }
 
 # ============================================

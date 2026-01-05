@@ -183,8 +183,9 @@ variable "container_name" {
 }
 
 variable "container_image" {
-  description = "The image to use for the container"
+  description = "The image to use for the container. This is only required if container_definitions is not provided."
   type        = string
+  default     = null
 }
 
 variable "container_cpu" {
@@ -213,6 +214,28 @@ variable "container_port_mappings" {
     protocol      = string
   }))
   default = []
+}
+
+variable "container_definitions" {
+  description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables (container_name, container_image, etc.)"
+  type = map(object({
+    name        = string
+    image       = string
+    cpu         = optional(number, 256)
+    memory      = optional(number, 512)
+    environment = optional(list(map(string)), [])
+    portMappings = optional(list(object({
+      containerPort = number
+      hostPort      = optional(number)
+      protocol      = optional(string, "tcp")
+    })), [])
+    logConfiguration = optional(object({
+      logDriver = string
+      options   = map(string)
+    }), null)
+    essential = optional(bool, true)
+  }))
+  default = {}
 }
 
 # ============================================

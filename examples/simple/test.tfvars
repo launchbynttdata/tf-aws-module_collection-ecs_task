@@ -12,27 +12,47 @@ tags = {
 # ============================================
 
 ecs_task_family = "example-ecs-task-family"
+ecs_task_cpu    = "512"
+ecs_task_memory = "1024"
 
 
 # ============================================
 # CONTAINER CONFIGURATION
 # ============================================
 
-container_name  = "nginx"
-container_image = "nginx:latest"
-container_environment = [
-  {
-    name  = "EXAMPLE_ENV_VAR"
-    value = "example-value"
+container_definitions = {
+  nginx = {
+    name  = "nginx"
+    image = "nginx:latest"
+    environment = [
+      {
+        name  = "EXAMPLE_ENV_VAR"
+        value = "example-value"
+      }
+    ]
+    portMappings = [
+      {
+        containerPort = 80
+        hostPort      = 80
+        protocol      = "tcp"
+      }
+    ]
+    essential = true
   }
-]
-container_port_mappings = [
-  {
-    containerPort = 80
-    hostPort      = 80
-    protocol      = "tcp"
+  sidecar = {
+    name   = "sidecar"
+    image  = "busybox:latest"
+    cpu    = 128
+    memory = 256
+    environment = [
+      {
+        name  = "SIDECAR_ENV_VAR"
+        value = "sidecar-value"
+      }
+    ]
+    essential = false
   }
-]
+}
 
 # ============================================
 # RESOURCE NAME MODULE VARIABLES
@@ -49,4 +69,3 @@ cloud_resource_type_policy    = "taskpolicy"
 instance_resource             = 0
 maximum_length                = 60
 separator                     = "-"
-

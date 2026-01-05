@@ -159,7 +159,7 @@ output "container_names" {
 
 output "container_definitions" {
   description = "The container definitions in JSON format"
-  value       = jsonencode(local.container_definition)
+  value       = jsonencode(local.container_definitions)
   sensitive   = true
 }
 

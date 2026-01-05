@@ -36,6 +36,8 @@ module "ecs_task" {
 
   # ECS Task configuration
   ecs_task_family = var.ecs_task_family
+  ecs_task_cpu    = var.ecs_task_cpu
+  ecs_task_memory = var.ecs_task_memory
 
   # IAM Role configuration
   execution_role_name = module.resource_names["execution"].standard
@@ -43,12 +45,14 @@ module "ecs_task" {
   task_policy_name    = module.resource_names["policy"].standard
 
   # Container configuration
-  container_name = var.container_name
+  container_definitions = var.container_definitions
 
-  container_image = var.container_image
-
-  container_environment = var.container_environment
-
+  # Individual container variables (used when container_definitions is empty)
+  container_name          = var.container_name
+  container_image         = var.container_image
+  container_cpu           = var.container_cpu
+  container_memory        = var.container_memory
+  container_environment   = var.container_environment
   container_port_mappings = var.container_port_mappings
 
   # Enable specific permissions
