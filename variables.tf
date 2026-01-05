@@ -183,7 +183,7 @@ variable "container_name" {
 }
 
 variable "container_image" {
-  description = "The image to use for the container"
+  description = "The image to use for the container. This is only required if container_definitions is not provided."
   type        = string
   default     = null
 }
