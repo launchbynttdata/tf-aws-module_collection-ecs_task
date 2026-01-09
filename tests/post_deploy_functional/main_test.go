@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	testConfigsExamplesFolderDefault = testimpl.TestConfigsExamplesFolderDefault
-	infraTFVarFileNameDefault        = testimpl.InfraTFVarFileNameDefault
+	testConfigsExamplesFolderDefault = "../../examples/simple"
+	infraTFVarFileNameDefault        = "test.tfvars"
 )
 
 func TestModule(t *testing.T) {

@@ -20,11 +20,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	TestConfigsExamplesFolderDefault = "../../examples/simple"
-	InfraTFVarFileNameDefault        = "test.tfvars"
-)
-
 func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	// Get AWS ECS client to verify task definition
 	ecsClient := GetAWSECSClient(t)
@@ -169,6 +164,24 @@ func testMultipleContainers(t *testing.T, ecsClient *ecs.Client, taskDefinitionA
 	// Verify multiple containers are defined
 	containerDefs := resp.TaskDefinition.ContainerDefinitions
 	assert.Greater(t, len(containerDefs), 1, "Task definition should have multiple containers")
+
+	// Check healthcheck for nginx container
+	nginxFound := false
+	for _, container := range containerDefs {
+		if *container.Name == "nginx" {
+			nginxFound = true
+			assert.NotNil(t, container.HealthCheck, "Nginx container should have a healthcheck")
+			if container.HealthCheck != nil {
+				assert.Equal(t, []string{"CMD-SHELL", "curl -f http://localhost/ || exit 1"}, container.HealthCheck.Command, "Healthcheck command should match")
+				assert.Equal(t, int32(30), *container.HealthCheck.Interval, "Healthcheck interval should be 30")
+				assert.Equal(t, int32(15), *container.HealthCheck.Timeout, "Healthcheck timeout should be 15")
+				assert.Equal(t, int32(1), *container.HealthCheck.Retries, "Healthcheck retries should be 1")
+				assert.Equal(t, int32(30), *container.HealthCheck.StartPeriod, "Healthcheck startPeriod should be 30")
+			}
+			break
+		}
+	}
+	assert.True(t, nginxFound, "Nginx container should be present")
 }
 
 func testTaskRolePolicies(t *testing.T, iamClient *iam.Client, taskRoleArn string) {
