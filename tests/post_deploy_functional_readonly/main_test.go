@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	testConfigsExamplesFolderDefault = "../../examples/simple"
-	infraTFVarFileNameDefault        = "test.tfvars"
+	testConfigsExamplesFolderDefault = testimpl.TestConfigsExamplesFolderDefault
+	infraTFVarFileNameDefault        = testimpl.InfraTFVarFileNameDefault
 )
 
 func TestLambdaLayerModule(t *testing.T) {

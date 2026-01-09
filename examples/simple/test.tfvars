@@ -38,6 +38,16 @@ container_definitions = {
       }
     ]
     essential = true
+    healthCheck = {
+      command = [
+        "CMD-SHELL",
+        "curl -f http://localhost/ || exit 1"
+      ]
+      interval    = 30
+      timeout     = 15
+      retries     = 1
+      startPeriod = 30
+    }
   }
   sidecar = {
     name   = "sidecar"

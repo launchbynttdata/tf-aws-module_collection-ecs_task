@@ -234,6 +234,13 @@ variable "container_definitions" {
       options   = map(string)
     }), null)
     essential = optional(bool, true)
+    healthCheck = optional(object({
+      command     = list(string)
+      interval    = number
+      timeout     = number
+      retries     = number
+      startPeriod = number
+    }), null)
   }))
   default = {}
 }

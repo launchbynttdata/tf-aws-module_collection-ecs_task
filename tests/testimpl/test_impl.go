@@ -20,6 +20,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	TestConfigsExamplesFolderDefault = "../../examples/simple"
+	InfraTFVarFileNameDefault        = "test.tfvars"
+)
+
 func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	// Get AWS ECS client to verify task definition
 	ecsClient := GetAWSECSClient(t)
