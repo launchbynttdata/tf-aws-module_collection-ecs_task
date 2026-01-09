@@ -255,7 +255,8 @@ locals {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-      essential = true
+      essential   = true
+      healthCheck = null
     }
   ]
 }
