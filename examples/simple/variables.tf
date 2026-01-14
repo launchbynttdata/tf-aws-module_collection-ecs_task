@@ -57,6 +57,15 @@ variable "container_definitions" {
       hostPort      = optional(number)
       protocol      = optional(string, "tcp")
     })), [])
+    mountPoints = optional(list(object({
+      sourceVolume  = string
+      containerPath = string
+      readOnly      = optional(bool, false)
+    })), [])
+    logConfiguration = optional(object({
+      logDriver = string
+      options   = map(string)
+    }), null)
     essential = optional(bool, true)
     healthCheck = optional(object({
       command     = list(string)
@@ -67,6 +76,40 @@ variable "container_definitions" {
     }), null)
   }))
   default = {}
+}
+
+variable "volumes" {
+  description = "Configuration block for volumes"
+  type = list(object({
+    name      = string
+    host_path = optional(string)
+    docker_volume_configuration = optional(object({
+      scope         = optional(string)
+      autoprovision = optional(bool)
+      driver        = optional(string)
+      driver_opts   = optional(map(string))
+      labels        = optional(map(string))
+    }))
+    efs_volume_configuration = optional(object({
+      file_system_id          = string
+      root_directory          = optional(string)
+      transit_encryption      = optional(string)
+      transit_encryption_port = optional(number)
+      authorization_config = optional(object({
+        access_point_id = optional(string)
+        iam             = optional(string)
+      }))
+    }))
+    fsx_windows_file_server_volume_configuration = optional(object({
+      file_system_id = string
+      root_directory = string
+      authorization_config = object({
+        credentials_parameter = string
+        domain                = string
+      })
+    }))
+  }))
+  default = []
 }
 
 # Individual container variables (used when container_definitions is empty)

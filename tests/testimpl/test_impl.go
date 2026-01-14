@@ -71,6 +71,10 @@ func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	t.Run("TestTaskRolePolicies", func(t *testing.T) {
 		testTaskRolePolicies(t, iamClient, taskRoleArn)
 	})
+
+	t.Run("TestMountPoints", func(t *testing.T) {
+		testMountPoints(t, ecsClient, taskDefinitionArn)
+	})
 }
 
 func GetAWSSTSClient(t *testing.T) *sts.Client {
@@ -316,4 +320,38 @@ func testTaskRolePolicies(t *testing.T, iamClient *iam.Client, taskRoleArn strin
 	assert.True(t, hasSSMPolicy, "Task role should have SSM Session Manager policy attached")
 	assert.False(t, hasAppConfigPolicy, "Task role should not have AppConfig policy attached when enable_ecs_task_appconfig_permissions is false")
 	assert.False(t, hasS3Policy, "Task role should not have S3 policy attached when enable_ecs_task_s3_permissions is false")
+}
+
+func testMountPoints(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn string) {
+	// Extract task definition name from ARN
+	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
+	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+
+	// Describe the task definition
+	describeInput := &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(parts[1]),
+	}
+	resp, err := ecsClient.DescribeTaskDefinition(context.TODO(), describeInput)
+	require.NoError(t, err, "Failed to describe task definition")
+
+	containerDefs := resp.TaskDefinition.ContainerDefinitions
+
+	// Check if at least one container has mount points
+	hasMountPoints := false
+	for _, container := range containerDefs {
+		if container.MountPoints != nil && len(container.MountPoints) > 0 {
+			hasMountPoints = true
+			// Verify each mount point has required fields
+			for _, mp := range container.MountPoints {
+				assert.NotEmpty(t, *mp.SourceVolume, "Source volume should not be empty")
+				assert.NotEmpty(t, *mp.ContainerPath, "Container path should not be empty")
+				// Optionally check readOnly if applicable
+				if mp.ReadOnly != nil {
+					// Assert based on expected value, but since it's not specified, just ensure it's set
+				}
+			}
+			break
+		}
+	}
+	assert.True(t, hasMountPoints, "At least one container should have mount points defined")
 }

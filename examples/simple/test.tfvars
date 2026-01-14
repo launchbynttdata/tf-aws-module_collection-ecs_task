@@ -37,6 +37,13 @@ container_definitions = {
         protocol      = "tcp"
       }
     ]
+    mountPoints = [
+      {
+        sourceVolume  = "efs-volume"
+        containerPath = "/app/data"
+        readOnly      = false
+      }
+    ]
     essential = true
     healthCheck = {
       command = [
@@ -63,6 +70,16 @@ container_definitions = {
     essential = false
   }
 }
+
+volumes = [
+  {
+    name = "efs-volume"
+    efs_volume_configuration = {
+      file_system_id = "fs-12345678"
+      root_directory = "/"
+    }
+  }
+]
 
 # ============================================
 # RESOURCE NAME MODULE VARIABLES

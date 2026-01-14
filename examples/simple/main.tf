@@ -46,6 +46,7 @@ module "ecs_task" {
 
   # Container configuration
   container_definitions = var.container_definitions
+  volumes               = var.volumes
 
   # Individual container variables (used when container_definitions is empty)
   container_name          = var.container_name
