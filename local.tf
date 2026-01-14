@@ -247,6 +247,7 @@ locals {
         hostPort      = port.hostPort
         protocol      = port.protocol
       }]
+      mountPoints = []
       logConfiguration = {
         logDriver = "awslogs"
         options = {

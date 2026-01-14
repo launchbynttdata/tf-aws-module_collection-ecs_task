@@ -229,6 +229,11 @@ variable "container_definitions" {
       hostPort      = optional(number)
       protocol      = optional(string, "tcp")
     })), [])
+    mountPoints = optional(list(object({
+      sourceVolume  = string
+      containerPath = string
+      readOnly      = optional(bool, false)
+    })), [])
     logConfiguration = optional(object({
       logDriver = string
       options   = map(string)
