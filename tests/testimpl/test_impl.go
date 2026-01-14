@@ -339,16 +339,13 @@ func testMountPoints(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn stri
 	// Check if at least one container has mount points
 	hasMountPoints := false
 	for _, container := range containerDefs {
-		if container.MountPoints != nil && len(container.MountPoints) > 0 {
+		if len(container.MountPoints) > 0 {
 			hasMountPoints = true
 			// Verify each mount point has required fields
 			for _, mp := range container.MountPoints {
 				assert.NotEmpty(t, *mp.SourceVolume, "Source volume should not be empty")
 				assert.NotEmpty(t, *mp.ContainerPath, "Container path should not be empty")
 				// Optionally check readOnly if applicable
-				if mp.ReadOnly != nil {
-					// Assert based on expected value, but since it's not specified, just ensure it's set
-				}
 			}
 			break
 		}
