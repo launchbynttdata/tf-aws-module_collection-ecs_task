@@ -212,6 +212,7 @@ variable "container_port_mappings" {
     containerPort = number
     hostPort      = number
     protocol      = string
+    name          = optional(string)
   }))
   default = []
 }
@@ -228,6 +229,7 @@ variable "container_definitions" {
       containerPort = number
       hostPort      = optional(number)
       protocol      = optional(string, "tcp")
+      name          = optional(string)
     })), [])
     mountPoints = optional(list(object({
       sourceVolume  = string
