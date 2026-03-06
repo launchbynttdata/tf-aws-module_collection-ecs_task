@@ -246,6 +246,7 @@ locals {
         containerPort = port.containerPort
         hostPort      = port.hostPort
         protocol      = port.protocol
+        name          = port.name
       }]
       mountPoints = []
       logConfiguration = {
