@@ -162,8 +162,11 @@ locals {
     var.custom_task_policies
   )
 
-  # Consolidated policies map for task role IAM primitive
-  task_custom_policies = merge(
+  # Consolidated policies map for task role IAM primitive.
+  # When var.task_role_policy_statements is provided, it takes full control — only those
+  # statements are created as customer managed policies and attached to the task role.
+  # All auto-generated statements (CloudWatch, SSM, S3, EFS, KMS, AppConfig, etc.) are skipped.
+  task_custom_policies = var.task_role_policy_statements != null ? var.task_role_policy_statements : merge(
     # Conditional policies
     local.cloudwatch_permissions != null ? {
       "CloudWatchLogs" = {
