@@ -171,67 +171,76 @@ locals {
     local.cloudwatch_permissions != null ? {
       "CloudWatchLogs" = {
         sid       = "VisualEditor0"
+        effect    = "Allow"
         actions   = local.cloudwatch_permissions.actions
         resources = local.cloudwatch_permissions.resources
       }
-    } : {},
+    } : tomap({}),
     local.ssm_permissions != null ? {
       "SSMSessionManager" = {
         sid       = ""
+        effect    = "Allow"
         actions   = local.ssm_permissions.actions
         resources = local.ssm_permissions.resources
       }
-    } : {},
+    } : tomap({}),
     local.appconfig_permissions != null ? {
       "AppConfig" = {
         sid       = ""
+        effect    = "Allow"
         actions   = local.appconfig_permissions.actions
         resources = local.appconfig_permissions.resources
       }
-    } : {},
+    } : tomap({}),
     length(var.s3_bucket_arns) > 0 && local.s3_permissions != null ? {
       "S3Access" = {
         sid       = ""
+        effect    = "Allow"
         actions   = local.s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
-    } : {},
+    } : tomap({}),
     length(var.task_kms_key_arns) > 0 ? {
       "KMSDecrypt" = {
         sid       = ""
+        effect    = "Allow"
         actions   = var.ecs_task_kms_permissions.actions
         resources = var.task_kms_key_arns
       }
-    } : {},
+    } : tomap({}),
     (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0) && local.efs_permissions != null ? {
       "EFSMount" = {
         sid       = ""
+        effect    = "Allow"
         actions   = local.efs_permissions.actions
         resources = concat(var.task_efs_file_system_arns, var.efs_access_point_arns)
       }
-    } : {},
+    } : tomap({}),
     length(var.ecs_efs_s3_kms_arns) > 0 ? {
       "EFSKMS" = {
         sid       = ""
+        effect    = "Allow"
         actions   = var.ecs_task_kms_permissions.actions
         resources = var.ecs_efs_s3_kms_arns
       }
-    } : {},
+    } : tomap({}),
     (length(var.s3_bucket_arns) > 0 && (length(var.task_efs_file_system_arns) > 0 || length(var.efs_access_point_arns) > 0)) && local.efs_s3_permissions != null ? {
       "EFSS3" = {
         sid       = ""
+        effect    = "Allow"
         actions   = local.efs_s3_permissions.actions
         resources = concat(var.s3_bucket_arns, [for arn in var.s3_bucket_arns : "${arn}/*"])
       }
-    } : {},
+    } : tomap({}),
     # Managed policy attachment permissions
     length(local.task_managed_policy_arns) > 0 ? {
       "ManagedPolicyAttachment" = {
         sid       = "ManagedPolicyAttachment"
+        effect    = "Allow"
         actions   = ["iam:AttachRolePolicy"]
         resources = local.task_managed_policy_arns
       }
-    } : {}
+    } : tomap({})
   )
 
   # ============================================
