@@ -601,3 +601,19 @@ variable "enable_ecs_task_efs_s3_permissions" {
   type        = bool
   default     = false
 }
+
+variable "task_role_policy_statements" {
+  description = <<-EOT
+    Map of custom IAM policy statements to create as customer managed policies and attach to the ECS task role.
+    When provided, replaces all auto-generated task role policy statements (CloudWatch, SSM, S3, EFS, KMS, AppConfig, etc.).
+    Each key becomes the policy name suffix (e.g. "<ecs_task_family>-task-<key>"). Tags from var.tags are applied automatically.
+    When null (default), the module falls back to computing policies from the individual permission variables.
+  EOT
+  type = map(object({
+    sid       = optional(string, "")
+    effect    = optional(string, "Allow")
+    actions   = list(string)
+    resources = list(string)
+  }))
+  default = null
+}
