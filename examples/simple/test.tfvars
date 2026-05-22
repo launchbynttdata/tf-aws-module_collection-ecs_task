@@ -44,7 +44,8 @@ container_definitions = {
         readOnly      = false
       }
     ]
-    essential = true
+    essential              = true
+    readOnlyRootFilesystem = true
     healthCheck = {
       command = [
         "CMD-SHELL",
