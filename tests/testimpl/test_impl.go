@@ -75,6 +75,10 @@ func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	t.Run("TestMountPoints", func(t *testing.T) {
 		testMountPoints(t, ecsClient, taskDefinitionArn)
 	})
+
+	t.Run("TestReadOnlyRootFilesystem", func(t *testing.T) {
+		testReadOnlyRootFilesystem(t, ecsClient, taskDefinitionArn)
+	})
 }
 
 func GetAWSSTSClient(t *testing.T) *sts.Client {
@@ -450,4 +454,31 @@ func testMountPoints(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn stri
 		}
 	}
 	assert.True(t, hasMountPoints, "At least one container should have mount points defined")
+}
+
+func testReadOnlyRootFilesystem(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn string) {
+	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
+	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+
+	resp, err := ecsClient.DescribeTaskDefinition(context.TODO(), &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(parts[1]),
+	})
+	require.NoError(t, err, "Failed to describe task definition")
+
+	nginxFound := false
+	sidecarFound := false
+	for _, container := range resp.TaskDefinition.ContainerDefinitions {
+		switch *container.Name {
+		case "nginx":
+			nginxFound = true
+			require.NotNil(t, container.ReadonlyRootFilesystem, "Nginx container should have readOnlyRootFilesystem set")
+			assert.True(t, *container.ReadonlyRootFilesystem, "Nginx container readOnlyRootFilesystem should be true")
+		case "sidecar":
+			sidecarFound = true
+			assert.Nil(t, container.ReadonlyRootFilesystem, "Sidecar container should not have readOnlyRootFilesystem set")
+		}
+	}
+
+	assert.True(t, nginxFound, "Nginx container should be present")
+	assert.True(t, sidecarFound, "Sidecar container should be present")
 }

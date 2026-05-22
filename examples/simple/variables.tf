@@ -66,7 +66,8 @@ variable "container_definitions" {
       logDriver = string
       options   = map(string)
     }), null)
-    essential = optional(bool, true)
+    essential              = optional(bool, true)
+    readOnlyRootFilesystem = optional(bool)
     healthCheck = optional(object({
       command     = list(string)
       interval    = number

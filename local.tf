@@ -247,7 +247,7 @@ locals {
   # CONTAINER DEFINITIONS
   # ============================================
 
-  container_definitions = length(var.container_definitions) > 0 ? values(var.container_definitions) : [
+  container_definitions = length(var.container_definitions) > 0 ? values(var.container_definitions) : tolist([
     {
       name        = var.container_name == null ? local.ecs_container_name : var.container_name
       image       = var.container_image
@@ -269,8 +269,9 @@ locals {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-      essential   = true
-      healthCheck = null
+      essential              = true
+      readOnlyRootFilesystem = null
+      healthCheck            = null
     }
-  ]
+  ])
 }
