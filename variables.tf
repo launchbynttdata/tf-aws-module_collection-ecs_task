@@ -220,6 +220,9 @@ variable "container_port_mappings" {
 variable "container_definitions" {
   description = "Map of container definitions for the ECS task. If provided, this overrides the individual container variables (container_name, container_image, etc.)"
   type = map(object({
+    # Fields in this object intentionally follow ECS container definition JSON names.
+    # Terraform-owned module variables stay snake_case, but this object is passed
+    # through as ECS JSON, so keeping AWS field names avoids breaking callers.
     name        = string
     image       = string
     cpu         = optional(number, 256)
@@ -242,6 +245,26 @@ variable "container_definitions" {
     }), null)
     essential              = optional(bool, true)
     readOnlyRootFilesystem = optional(bool)
+    linuxParameters = optional(object({
+      capabilities = optional(object({
+        add  = optional(list(string), [])
+        drop = optional(list(string), [])
+      }))
+      devices = optional(list(object({
+        containerPath = optional(string)
+        hostPath      = string
+        permissions   = optional(list(string), [])
+      })), [])
+      initProcessEnabled = optional(bool)
+      maxSwap            = optional(number)
+      sharedMemorySize   = optional(number)
+      swappiness         = optional(number)
+      tmpfs = optional(list(object({
+        containerPath = string
+        size          = number
+        mountOptions  = optional(list(string), [])
+      })), [])
+    }))
     healthCheck = optional(object({
       command     = list(string)
       interval    = number

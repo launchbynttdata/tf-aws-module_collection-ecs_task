@@ -247,8 +247,10 @@ locals {
   # CONTAINER DEFINITIONS
   # ============================================
 
-  container_definitions = length(var.container_definitions) > 0 ? values(var.container_definitions) : tolist([
+  container_definitions_raw = length(var.container_definitions) > 0 ? values(var.container_definitions) : tolist([
     {
+      # This fallback object is shaped as ECS container definition JSON. Keep
+      # these nested field names aligned with AWS, not Terraform variable style.
       name        = var.container_name == null ? local.ecs_container_name : var.container_name
       image       = var.container_image
       cpu         = var.container_cpu
@@ -271,7 +273,38 @@ locals {
       }
       essential              = true
       readOnlyRootFilesystem = null
+      linuxParameters        = null
       healthCheck            = null
     }
   ])
+
+  container_definitions = [
+    for container in local.container_definitions_raw : {
+      name        = container.name
+      image       = container.image
+      cpu         = container.cpu
+      memory      = container.memory
+      environment = container.environment
+      portMappings = [
+        for port in container.portMappings : {
+          containerPort = port.containerPort
+          hostPort      = port.hostPort
+          protocol      = port.protocol
+          name          = try(port.name, null)
+        }
+      ]
+      mountPoints = [
+        for mount_point in container.mountPoints : {
+          sourceVolume  = mount_point.sourceVolume
+          containerPath = mount_point.containerPath
+          readOnly      = mount_point.readOnly
+        }
+      ]
+      logConfiguration       = container.logConfiguration
+      essential              = container.essential
+      readOnlyRootFilesystem = container.readOnlyRootFilesystem
+      linuxParameters        = container.linuxParameters
+      healthCheck            = container.healthCheck
+    }
+  ]
 }

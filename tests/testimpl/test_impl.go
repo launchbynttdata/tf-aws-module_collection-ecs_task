@@ -79,6 +79,10 @@ func TestComposableComplete(t *testing.T, ctx testTypes.TestContext) {
 	t.Run("TestReadOnlyRootFilesystem", func(t *testing.T) {
 		testReadOnlyRootFilesystem(t, ecsClient, taskDefinitionArn)
 	})
+
+	t.Run("TestLinuxParametersTmpfs", func(t *testing.T) {
+		testLinuxParametersTmpfs(t, ecsClient, taskDefinitionArn)
+	})
 }
 
 func GetAWSSTSClient(t *testing.T) *sts.Client {
@@ -476,6 +480,39 @@ func testReadOnlyRootFilesystem(t *testing.T, ecsClient *ecs.Client, taskDefinit
 		case "sidecar":
 			sidecarFound = true
 			assert.Nil(t, container.ReadonlyRootFilesystem, "Sidecar container should not have readOnlyRootFilesystem set")
+		}
+	}
+
+	assert.True(t, nginxFound, "Nginx container should be present")
+	assert.True(t, sidecarFound, "Sidecar container should be present")
+}
+
+func testLinuxParametersTmpfs(t *testing.T, ecsClient *ecs.Client, taskDefinitionArn string) {
+	parts := regexp.MustCompile(`^arn:aws:ecs:[^:]+:\d+:task-definition/(.+)$`).FindStringSubmatch(taskDefinitionArn)
+	require.Len(t, parts, 2, "Task definition ARN should contain task definition name")
+
+	resp, err := ecsClient.DescribeTaskDefinition(context.TODO(), &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(parts[1]),
+	})
+	require.NoError(t, err, "Failed to describe task definition")
+
+	nginxFound := false
+	sidecarFound := false
+	for _, container := range resp.TaskDefinition.ContainerDefinitions {
+		switch *container.Name {
+		case "nginx":
+			nginxFound = true
+			require.NotNil(t, container.LinuxParameters, "Nginx container should have linuxParameters set")
+			require.Len(t, container.LinuxParameters.Tmpfs, 1, "Nginx container should have one tmpfs mount")
+
+			tmpfs := container.LinuxParameters.Tmpfs[0]
+			require.NotNil(t, tmpfs.ContainerPath, "Tmpfs container path should be set")
+			assert.Equal(t, "/tmp", *tmpfs.ContainerPath, "Tmpfs container path should match")
+			assert.EqualValues(t, 64, tmpfs.Size, "Tmpfs size should match")
+			assert.ElementsMatch(t, []string{"defaults", "rw", "mode=1777"}, tmpfs.MountOptions, "Tmpfs mount options should match")
+		case "sidecar":
+			sidecarFound = true
+			assert.Nil(t, container.LinuxParameters, "Sidecar container should not have linuxParameters set")
 		}
 	}
 

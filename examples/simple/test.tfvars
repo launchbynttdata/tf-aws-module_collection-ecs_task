@@ -46,6 +46,15 @@ container_definitions = {
     ]
     essential              = true
     readOnlyRootFilesystem = true
+    linuxParameters = {
+      tmpfs = [
+        {
+          containerPath = "/tmp"
+          size          = 64
+          mountOptions  = ["defaults", "rw", "mode=1777"]
+        }
+      ]
+    }
     healthCheck = {
       command = [
         "CMD-SHELL",
